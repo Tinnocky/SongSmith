@@ -1,0 +1,9 @@
+fastapi
+pydantic
+pretty_midi
+httpx
+pyfluidsynth
+bcrypt
+python-jose
+sqlalchemy
+python-dotenv

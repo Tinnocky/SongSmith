@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Environment variables
+.env
+
+# Database
+Server/DB/database.db
+
+# Large binary files
+Client/GeneralUser_GS_v1.471.sf2
+
+# PyCharm
+.idea/
