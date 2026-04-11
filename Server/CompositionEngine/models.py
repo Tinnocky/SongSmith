@@ -35,12 +35,31 @@ class Note:
         )"""
 
     @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        if not name:
+            raise ValueError
+
+        self._name = name
+
+    @property
     def pitch(self) -> int:
         return self._pitch
 
     @property
     def degree(self) -> int:
         return self._degree
+
+    @degree.setter
+    def degree(self, degree):
+        if degree < 1 or degree > 7:
+            raise ValueError
+
+        self._degree = degree
+
 
     @property
     def beats(self) -> float | None:

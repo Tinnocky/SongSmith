@@ -4,7 +4,7 @@ import pretty_midi as pm
 
 from Server.CompositionEngine.models import Chord, Song
 from Server.utils.composition_utils import INSTRUMENTS_MIDI_CHANNELS, OCTAVES, CHORD_OCTAVES, MIDI_DRUM_PITCHES, \
-    DRUM_VELOCITIES, SONG_PARTS, BEATS_PER_BAR, DRUM_TO_PATTERN_MAP
+    DRUM_VELOCITIES, SONG_PARTS, BEATS_PER_BAR, DRUM_TO_PATTERN_MAP, ARPEGGIO_OCTAVES
 
 
 class Timeline:
@@ -38,7 +38,7 @@ class MidiEngine:
         # handle drums
         self.drums_instrument: pm.Instrument | None = None
         if not song.drums.is_empty():  # not all songs have drums
-            self.drums_instrument = pm.Instrument(program=0, is_drum=True)
+            self.drums_instrument = pm.Instrument(program=0, is_drum=True)  # channel 9
             self.midi.instruments.append(self.drums_instrument)  # append drums
 
     @cached_property
@@ -106,16 +106,40 @@ class MidiEngine:
         note_beats = chord.BEATS / 4  # all notes with length of 1 beat (if chord.BEATS is 4)
         note_seconds = self._beats_to_seconds(note_beats)
 
-        for note, octave in zip(chord.notes, CHORD_OCTAVES["ARPEGGIO " + direction]):
-            self._add_note(note.velocity, note.pitch, octave, self.chords_time.current, note_seconds,
-                           self.chords_instrument)
-            self.chords_time.advance(note_seconds)
+        # pick the right octaves for each note
+        notes = list(chord.notes) + [chord.notes[0]]  # root, 3rd, 5th, root
+        last_midi_pitch = self._get_midi_pitch(notes[0].pitch, 3)  # first note starts on octave 3
 
-        # add the 4th note
-        note = chord.notes[0]  # root
-        self._add_note(note.velocity, note.pitch, CHORD_OCTAVES["ARPEGGIO " + direction][-1], self.chords_time.current,
+        # add first note directly at octave 3
+        self._add_note(notes[0].velocity, notes[0].pitch, 3, self.chords_time.current,
                        note_seconds, self.chords_instrument)
         self.chords_time.advance(note_seconds)
+
+        # add remaining notes
+        for note in notes[1:]:
+            # pick the lowest octave that's closest to the last note and is going in the right direction
+            note_octave = min(
+                ARPEGGIO_OCTAVES,
+                key=lambda octave: (
+                    abs(self._get_midi_pitch(note.pitch, octave) - last_midi_pitch)
+                    # both statements must be the same for the whole statement to produce True
+                    if (self._get_midi_pitch(note.pitch, octave) > last_midi_pitch) == (direction == "UP")
+                    else float('inf')  # return the largest value, so it's never picked
+                )
+            )
+
+            # if all octaves were disqualified, pick closest regardless of direction
+            if (self._get_midi_pitch(note.pitch, note_octave) > last_midi_pitch) != (direction == "UP"):
+                note_octave = min(
+                    ARPEGGIO_OCTAVES,
+                    key=lambda octave: abs(self._get_midi_pitch(note.pitch, octave) - last_midi_pitch)
+                )
+
+            # got octave, now add note
+            last_midi_pitch = self._get_midi_pitch(note.pitch, note_octave)
+            self._add_note(note.velocity, note.pitch, note_octave, self.chords_time.current,
+                           note_seconds, self.chords_instrument)
+            self.chords_time.advance(note_seconds)
 
     def _add_offbeat_chord(self, chord: Chord):
         """add all the notes of an offbeat chord to the midi.
@@ -143,6 +167,7 @@ class MidiEngine:
         self._add_note(first_note.velocity, first_note.pitch, CHORD_OCTAVES["WALTZ-LIKE"][0], self.chords_time.current,
                        note_seconds, self.chords_instrument)
         self.chords_time.advance(note_seconds)
+        self.chords_time.advance(self._beats_to_seconds(1) - note_seconds)  # round to 1 beat
 
         for _ in range(3):
             for note, octave in zip(chord.notes[1:], CHORD_OCTAVES["WALTZ-LIKE"][1:]):  # skip first note data
@@ -150,6 +175,7 @@ class MidiEngine:
                                self.chords_instrument)
 
             self.chords_time.advance(note_seconds)
+            self.chords_time.advance(self._beats_to_seconds(1) - note_seconds)  # round to 1 beat
 
     def _add_stride_chord(self, chord: Chord):
         """add all the notes of a stride chord to the midi.
@@ -163,12 +189,14 @@ class MidiEngine:
             self._add_note(note.velocity, note.pitch, CHORD_OCTAVES["STRIDE"][0], self.chords_time.current,
                            note_seconds, self.chords_instrument)
             self.chords_time.advance(note_seconds)
+            self.chords_time.advance(self._beats_to_seconds(1) - note_seconds)  # round to 1 beat
 
             # add the 2nd/4th beat (2 notes)
             for note, octave in zip(chord.notes[1:], CHORD_OCTAVES["STRIDE"][1:]):
                 self._add_note(note.velocity, note.pitch, octave, self.chords_time.current, note_seconds,
                                self.chords_instrument)
             self.chords_time.advance(note_seconds)
+            self.chords_time.advance(self._beats_to_seconds(1) - note_seconds)  # round to 1 beat
 
     def _add_note(self, velocity: int, pitch: int, octave: int, start_time: float, seconds: float,
                   instrument: pm.Instrument) -> int:
@@ -179,7 +207,7 @@ class MidiEngine:
 
         new_midi_note = pm.Note(
             velocity=velocity,
-            pitch=last_midi_pitch + 12, # for any note: bounce it up an octave so it will sound clearer.
+            pitch=last_midi_pitch + 12,  # for any note: bounce it up an octave so it will sound clearer.
             start=start_time,
             end=start_time + seconds
         )
@@ -198,7 +226,6 @@ class MidiEngine:
             pattern = self._song.drums.bridge_pattern
         else:
             pattern = self._song.drums.main_pattern
-
 
         pattern_dict, fill_parts = DRUM_TO_PATTERN_MAP[pattern]
         self._add_drums_pattern(pattern_dict, part_name, self._song.beats[part_name], fill_parts)

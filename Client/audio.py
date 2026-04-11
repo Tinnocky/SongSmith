@@ -19,15 +19,10 @@ class MidiPlayer:
         self.stop_event = threading.Event()  # flag for if the music stopped
         self.play_thread = None  # thread not linked just yet
 
-    def __enter__(self):  # to be easily controlled by with statements
+    def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):  # to be easily controlled by with statements
-        self.stop()
-        self.synth.delete()
-
-    def __del__(self):
-        """clean up fluidsynth when the object is destroyed"""
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
         self.synth.delete()
 
@@ -35,38 +30,27 @@ class MidiPlayer:
         """set up the instruments before playing"""
         self.synth.system_reset()
 
-        # mute all 16 channels
+        # go over all 16 channels and reset them explicitly
         for i in range(16):
-            self.synth.cc(i, 7, 0)
+            self.synth.cc(i, 7, 0)  # mute all
+            self.synth.program_select(i, self.soundfont_id, 0, 0)  # reset every channel to program 0
 
-        # configure the tracks again
-        for channel, inst in enumerate(instruments):
-            bank = 128 if inst.is_drum else 0
-
-            self.synth.program_select(channel, self.soundfont_id, bank, inst.program)  # load
-            self.synth.cc(channel, 7, 100)  # unmute
-
-            # enhance audio so it'd sound better
-            self.synth.cc(channel, 7, 127) # volume
-            reverb_amount = 60 if not inst.is_drum else 40
-            self.synth.cc(channel, 91, reverb_amount)
-
-            # CC 93: Chorus (0-127). Thickens the sound.
-            # Great for Synths/Guitars, usually kept at 0 for Drums.
-            if not inst.is_drum:
-                self.synth.cc(channel, 93, 50)
-            else:
-                self.synth.cc(channel, 93, 0)
+        for i, inst in enumerate(instruments):
+            channel = 9 if inst.is_drum else i  # drums always on channel 9
+            self.synth.program_select(channel, self.soundfont_id, 128 if inst.is_drum else 0, inst.program)
+            # audio enhancements
+            self.synth.cc(channel, 7, 127)  # raise volume
+            self.synth.cc(channel, 91, 40 if inst.is_drum else 60)  # add reverb
+            self.synth.cc(channel, 93, 0 if inst.is_drum else 50)  # chorus
 
     def play_logic(self, midi):
         """play a midi using fluidsynth"""
         self._setup_channels(midi.instruments)
-
         all_note_events = []
 
-        for channel, inst in enumerate(midi.instruments):
+        for i, inst in enumerate(midi.instruments):
+            channel = 9 if inst.is_drum else i
             for note in inst.notes:
-                # add all notes to the events list
                 all_note_events.append((note.start, "ON", note.pitch, note.velocity, channel))
                 all_note_events.append((note.end, "OFF", note.pitch, 0, channel))
 
@@ -88,7 +72,7 @@ class MidiPlayer:
             else:
                 self.synth.noteoff(channel, pitch)
 
-        self.synth.system_reset()  # silence everything when done
+        self.synth.system_reset()  # silence at the end of the song
 
     def play(self, midi):
         """start playing a pretty midi object with threading"""
@@ -107,4 +91,4 @@ class MidiPlayer:
         if self.play_thread and self.play_thread.is_alive():  # join active thread
             self.play_thread.join()
 
-        self.synth.system_reset()  # kill any hanging notes
+        self.synth.system_reset()  # silence and kill any hanging notes

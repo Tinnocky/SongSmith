@@ -104,10 +104,9 @@ SONG_PARTS = ["INTRO", "VERSE", "BRIDGE", "CHORUS", "ENDING"]
 PATTERNS = ["SUSTAINED 1", "SUSTAINED 2", "SUSTAINED 4", "ARPEGGIO UP", "ARPEGGIO DOWN",
             "OFFBEAT", "WALTZ-LIKE", "STRIDE"]
 OCTAVES = [3, 4, 5, 6]
-CHORD_OCTAVES = {
+ARPEGGIO_OCTAVES = [2, 3, 4, 5] # these are a little lower
+CHORD_OCTAVES = { # arpeggio octaves aren't here as they're assigned differently
     "SUSTAINED": [3, 3, 3],  # root -> 3rd -> 5th
-    "ARPEGGIO UP": [3, 3, 3, 4],  # root -> 3rd -> 5th -> root
-    "ARPEGGIO DOWN": [4, 3, 3, 3],  # root -> 5th -> 3rd -> root
     "OFFBEAT": [3, 3, 3],  # root -> 3rd -> 5th
     "WALTZ-LIKE": [3, 3, 3],  # root -> 3rd -> 5th
     "STRIDE": [3, 3, 3]  # root -> 3rd -> 5th
@@ -117,7 +116,7 @@ INSTRUMENTS_MIDI_CHANNELS = {
     "PIANO": 0,
     "NYLON GUITAR": 24,
     "ROCK GUITAR": 29,
-    "SYNTH": 81
+    "SYNTH": 90
 }
 
 # drums
@@ -240,14 +239,14 @@ DRUM_TO_PATTERN_MAP = {
 }
 # weights / shifts related, or used for calculation in composer.py...
 BASE_CHORD_PATTERN_WEIGHTS = {
-    "SUSTAINED 1": 0.12,
-    "SUSTAINED 2": 0.13,
+    "SUSTAINED 1": 0.14,
+    "SUSTAINED 2": 0.14,
     "SUSTAINED 4": 0.15,
-    "ARPEGGIO UP": 0.13,
-    "ARPEGGIO DOWN": 0.13,
-    "WALTZ-LIKE": 0.13,
-    "STRIDE": 0.12,
-    "OFFBEAT": 0.09
+    "ARPEGGIO UP": 0.12,
+    "ARPEGGIO DOWN": 0.12,
+    "WALTZ-LIKE": 0.12,
+    "STRIDE": 0.11,
+    "OFFBEAT": 0.10
 }
 
 # big lookup table for _get_chord_pattern...

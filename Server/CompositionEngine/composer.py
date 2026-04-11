@@ -2,8 +2,8 @@ import math
 import random
 from collections import Counter
 
-from Server.CompositionEngine.theory import Ruleset
 from Server.CompositionEngine.models import Note, Chord, Drums, Song
+from Server.CompositionEngine.theory import Ruleset
 from Server.utils.composition_utils import BASE_NOTE_VELOCITY_WEIGHTS, DRUM_MAIN_PATTERNS, NOTE_VELOCITIES, \
     BASE_NOTE_BEATS_WEIGHTS, NOTE_BEATS, VELOCITY_BEAT_SHIFTS, VELOCITY_DEGREE_SHIFTS, get_beat_position, \
     CHORD_PATTERN_MULTIPLIERS, BASE_CHORD_PATTERN_WEIGHTS, BEATS_PER_BAR, SONG_PARTS
@@ -63,6 +63,11 @@ class Generator:
 
                 melody_length_beats += new_note.beats
 
+        # change the last note of the whole song to be the root note
+        if part_name == "ENDING":
+            melody[-1].note_name = self._ruleset.legal_notes[0]  # root note
+            melody[-1].degree = 1  # set it to the first degree
+
         return chords, melody
 
     # chords
@@ -79,7 +84,7 @@ class Generator:
                 triad[i],
                 self._ruleset.scale_data["TRIADS"][degree - 1][i],
                 None,  # type: ignore
-                60 # chords will always have this velocity
+                60  # chords will always have this velocity
             ))
 
         return Chord(notes, degree, pattern)
