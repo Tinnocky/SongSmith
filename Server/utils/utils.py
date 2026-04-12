@@ -152,6 +152,14 @@ async def validate_strong_password(password: str) -> list[str] | None:
 
 
 # songs related
+# this dict holds songs that were created but still didn't get confirmed to either save or delete them.
+# dict[user_id, dict[song_uuid, song_data]]
+song_cache: dict[str, dict[str, dict]] = {}
+
+def get_song_cache() -> dict[str, dict[str, dict]]:
+    """FastAPI dependency. returns the song cache"""
+    return song_cache
+
 def get_midi(rq) -> tuple[bytes, float]:
     """create a new song and return the midi file in bytes, and it's length in seconds, using the request."""
     # create song

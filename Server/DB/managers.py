@@ -1,5 +1,6 @@
 import bcrypt
-from sqlalchemy import Column, String, Integer, Float, LargeBinary, ForeignKey, Engine
+from sqlalchemy import Column, String, Integer, Float, LargeBinary, ForeignKey, Engine, UniqueConstraint
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from Server.DB.database import Base
@@ -11,23 +12,28 @@ class SongTable(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     owner_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
     midi_bytes = Column(LargeBinary, nullable=False)
+    name = Column(String, nullable=False)
     root_key = Column(String, nullable=False)
     scale = Column(String, nullable=False)
     tempo = Column(Integer, nullable=False)
     length = Column(Float, nullable=False)
     complexity = Column(String, nullable=False)
 
+    # no user can have more than one song with the same name
+    __table_args__ = (UniqueConstraint("owner_id", "name"),)
+
 
 class SongManager:
     def __init__(self, db_engine: Engine):
         self._engine = db_engine
 
-    def save_song(self, owner_id: int, midi_bytes: bytes, root: str,
+    def save_song(self, owner_id: int, midi_bytes: bytes, name: str, root: str,
                   scale: str, tempo: int, length: float, complexity: str) -> int:
         """save a new song to the songs table and returns its ID"""
         with Session(self._engine) as session:
             new_song = SongTable(owner_id=owner_id,
                                  midi_bytes=midi_bytes,
+                                 name=name,
                                  root_key=root,
                                  scale=scale,
                                  tempo=tempo,
@@ -41,18 +47,36 @@ class SongManager:
             session.refresh(new_song)  # so we can still reach the object after commit
             return new_song.id  # type: ignore
 
-    def delete_song(self, owner_id: int, song_id: int) -> bool:
+    def delete_song(self, owner_id: int, song_name: str) -> bool:
         """deletes a song from the table and returns if it was deleted or not."""
         with Session(self._engine) as session:
             song_deleted = session.query(SongTable).filter(
                 SongTable.owner_id == owner_id,
-                SongTable.id == song_id
+                SongTable.name == song_name
             ).delete()  # delete it
 
             session.commit()
 
             # delete returns a number
             return song_deleted > 0
+
+    def update_song_name(self, owner_id: int, old_song_name: str, new_song_name: str) -> bool | None:
+        """renames the song by the provided owner with the provided name to the new name."""
+        with Session(self._engine) as session:
+            song = session.query(SongTable).filter(
+                SongTable.owner_id == owner_id,
+                SongTable.name == old_song_name
+            ).first()
+
+            if song:  # run only if song exists
+                try:
+                    song.name = new_song_name
+                    session.commit()
+                    return True
+                except IntegrityError:
+                    return False
+
+            return None
 
     def list_songs(self, owner_id: int) -> list[str]:
         """get all songs by the provided user and return them as a list of strings"""
@@ -62,23 +86,18 @@ class SongManager:
             ).all()
 
         return [
-            f"Song No.{i}: {s.root_key} {s.scale} | {s.tempo} BPM | {s.length:.2f} Seconds | Complexity: {s.complexity}"
-            for i, s in enumerate(song_list, start=1)
+            f"{s.name}: {s.root_key} {s.scale} | {s.tempo} BPM | {s.length:.2f} Seconds | Complexity: {s.complexity}"
+            for s in song_list
         ]
 
-    def get_midi_by_id(self, owner_id: int, song_id: int) -> bytes | None:
+    def get_midi_by_name(self, owner_id: int, song_name: str) -> bytes | None:
         """get the midi_bytes of the song with the provided username and id.
         return the bytes if found or none if not found"""
-        # Convert visual "Song No.1" to 0-based index
-        offset_index = song_id - 1
-
-        if offset_index < 0:
-            return None
-
         with Session(self._engine) as session:
             song = session.query(SongTable).filter(
-                SongTable.owner_id == owner_id
-            ).order_by(SongTable.id).offset(offset_index).first()
+                SongTable.owner_id == owner_id,
+                SongTable.name == song_name
+            ).first()
 
             return song.midi_bytes if song else None
 

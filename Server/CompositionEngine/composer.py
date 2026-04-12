@@ -4,7 +4,7 @@ from collections import Counter
 
 from Server.CompositionEngine.models import Note, Chord, Drums, Song
 from Server.CompositionEngine.theory import Ruleset
-from Server.utils.composition_utils import BASE_NOTE_VELOCITY_WEIGHTS, DRUM_MAIN_PATTERNS, NOTE_VELOCITIES, \
+from Server.utils.composition_utils import BASE_NOTE_VELOCITY_WEIGHTS, DRUM_MAIN_PATTERNS, \
     BASE_NOTE_BEATS_WEIGHTS, NOTE_BEATS, VELOCITY_BEAT_SHIFTS, VELOCITY_DEGREE_SHIFTS, get_beat_position, \
     CHORD_PATTERN_MULTIPLIERS, BASE_CHORD_PATTERN_WEIGHTS, BEATS_PER_BAR, SONG_PARTS
 
@@ -45,10 +45,8 @@ class Generator:
 
         # generation loop
         while beats_generated < part_length_beats:
-            beat_position = get_beat_position(beats_generated)
-
             # generate 1 chord for this bar
-            new_chord = self._rnd_chord(chords, beat_position, pattern)
+            new_chord = self._rnd_chord(chords, pattern)
             chords.append(new_chord)
 
             # total_beats_generated sums up the chord's length, and the melody can't pass it.
@@ -71,10 +69,9 @@ class Generator:
         return chords, melody
 
     # chords
-    def _rnd_chord(self, previous_chords: list[Chord] | None, beat_position: float, pattern: str) -> Chord:
+    def _rnd_chord(self, previous_chords: list[Chord] | None, pattern: str) -> Chord:
         """Return the next chord based on the ruleset and previous chords."""
         degree = self._get_chord_degree(previous_chords)
-        # velocity = self._get_velocity(degree, beat_position, offset=-20)
 
         notes = []
         triad = self._ruleset.legal_triads[degree - 1]
@@ -199,7 +196,6 @@ class Generator:
         last_degree = previous_melody[-1].degree if previous_melody else None
         if last_degree:
             for degree in weights:
-                distance = abs(degree - last_degree)  # calculate steps distance
                 weights[degree] *= 1.6
 
         # anti repetition
@@ -262,7 +258,7 @@ class Generator:
         return random.choices(list(weights.keys()), weights=list(weights.values()))[0]
 
     # velocity math
-    def _get_velocity(self, degree: int, beat_position: float, offset: int = 0) -> int:
+    def _get_velocity(self, degree: int, beat_position: float) -> int:
         """choose and return the note's velocity from NOTE_VELOCITIES"""
         shift = 0.0
 
@@ -280,8 +276,7 @@ class Generator:
 
         weights = self._apply_shift(BASE_NOTE_VELOCITY_WEIGHTS.copy(), shift)
 
-        choice = random.choices(list(weights.keys()), weights=list(weights.values()))[0]
-        return max(min(NOTE_VELOCITIES), min(max(NOTE_VELOCITIES), choice + offset))  # calculate offset and return
+        return random.choices(list(weights.keys()), weights=list(weights.values()))[0]
 
     @staticmethod
     def _apply_shift(weights: dict[int, float], shift: float) -> dict[int, float]:
@@ -319,25 +314,4 @@ class Generator:
 
 # test
 if __name__ == "__main__":
-    rulesets = [
-        # Ruleset("C", "MAJOR", 120, "PIANO", "PIANO", 8, 8, True, "MEDIUM")
-        Ruleset("G", "MIXOLYDIAN", 120, "SYNTH", "NYLON GUITAR", 12, 12, True, "COMPLEX"),
-        Ruleset("A", "MINOR", 90, "NYLON GUITAR", "SYNTH", 4, 8, False, "SIMPLE"),
-        Ruleset("F#", "MAJOR", 140, "ROCK GUITAR", "PIANO", 16, 16, True, "COMPLEX"),
-        Ruleset("A#", "MINOR", 75, "SYNTH", "SYNTH", 8, 4, False, "MEDIUM"),
-        Ruleset("D", "MIXOLYDIAN", 100, "PIANO", "ROCK GUITAR", 4, 4, True, "SIMPLE"),
-        Ruleset("B", "MAJOR", 200, "ROCK GUITAR", "ROCK GUITAR", 12, 8, False, "COMPLEX"),
-        Ruleset("C#", "MINOR", 1, "NYLON GUITAR", "NYLON GUITAR", 16, 4, True, "SIMPLE"),
-        Ruleset("E", "MAJOR", 60, "SYNTH", "PIANO", 8, 16, False, "MEDIUM"),
-        Ruleset("G#", "MIXOLYDIAN", 300, "PIANO", "SYNTH", 16, 12, True, "COMPLEX"),
-    ]
-    print(rulesets)
-
-    for j, rs in enumerate(rulesets, 1):
-        print(f"{'=' * 60}")
-        print(f"Song {j}: {rs.scale_name} {rs._key} | Tempo {rs.tempo} | {rs.complexity}")  # ignore _key cuz its test
-        print(f"{'=' * 60}")
-
-        song = Generator(rs).generate_song()
-        print(song)
-        print()
+    pass

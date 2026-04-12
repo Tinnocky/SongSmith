@@ -11,30 +11,21 @@ class UserRequest(BaseModel):
     password: str
 
 
-class RegisterResponse(BaseModel):
-    message: str = "User registered."
-
-
-@router.post("/register")
-async def register(request: UserRequest, users_table=Depends(utils.get_user_manager)) -> RegisterResponse:
+@router.post("/register", status_code=status.HTTP_204_NO_CONTENT)
+async def register(request: UserRequest, users_table=Depends(utils.get_user_manager)):
     """check if a username is registered, if it is then raise an exception. if not, register it."""
-    print("REGISTER HIT")
     pw_error_messages = await utils.validate_strong_password(request.password)
     if pw_error_messages:  # if not None = password is bad
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="\n".join(pw_error_messages))
 
     # try to save the user in the database
-    if not users_table.save_user(request.username, request.password):  # username taken
+    if not users_table.save_user(request.username, request.password):  # register and check if username taken
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="User already exists.")
 
-    # user does not exist and password is completely fine, register it
-    return RegisterResponse()
-
 
 class LoginResponse(BaseModel):
-    message: str = "User logged in."
     access_token: str
     token_type: str = "bearer"
     refresh_token: str
@@ -56,15 +47,10 @@ def login(request: UserRequest, users_table=Depends(utils.get_user_manager)) -> 
                          refresh_token=refresh_token)
 
 
-class DeleteResponse(BaseModel):
-    message: str = "User deleted successfully."
-
-
-@router.delete("/delete_user")
+@router.delete("/user", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(user_data: dict = Depends(utils.get_user_data), users_table=Depends(utils.get_user_manager)):
     """delete user from the database"""
     users_table.delete_user(user_data["user_id"])
-    return DeleteResponse()
 
 
 class RefreshResponse(BaseModel):
@@ -85,13 +71,9 @@ class ChangePasswordRequest(BaseModel):
     new_password: str
 
 
-class ChangePasswordResponse(BaseModel):
-    message: str = "Password changed successfully."
-
-
-@router.post("/change_password")
+@router.post("/change_password", status_code=status.HTTP_204_NO_CONTENT)
 async def change_password(request: ChangePasswordRequest, user_data: dict = Depends(utils.get_user_data),
-                          users_table=Depends(utils.get_user_manager)) -> ChangePasswordResponse:
+                          users_table=Depends(utils.get_user_manager)):
     """change the users password to the new password, provided the old password is correct"""
 
     if not users_table.verify_pair(user_data["username"], request.old_password):
@@ -106,8 +88,3 @@ async def change_password(request: ChangePasswordRequest, user_data: dict = Depe
 
     # good
     users_table.update_password(user_data["user_id"], request.new_password)
-    return ChangePasswordResponse()
-
-
-class MeResponse(BaseModel):
-    username: str
