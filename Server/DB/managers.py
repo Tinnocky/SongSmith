@@ -1,6 +1,5 @@
 import bcrypt
 from sqlalchemy import Column, String, Integer, Float, LargeBinary, ForeignKey, Engine, UniqueConstraint
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from Server.DB.database import Base
@@ -59,24 +58,6 @@ class SongManager:
 
             # delete returns a number
             return song_deleted > 0
-
-    def update_song_name(self, owner_id: int, old_song_name: str, new_song_name: str) -> bool | None:
-        """renames the song by the provided owner with the provided name to the new name."""
-        with Session(self._engine) as session:
-            song = session.query(SongTable).filter(
-                SongTable.owner_id == owner_id,
-                SongTable.name == old_song_name
-            ).first()
-
-            if song:  # run only if song exists
-                try:
-                    song.name = new_song_name
-                    session.commit()
-                    return True
-                except IntegrityError:
-                    return False
-
-            return None
 
     def list_songs(self, owner_id: int) -> list[str]:
         """get all songs by the provided user and return them as a list of strings"""

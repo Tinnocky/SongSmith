@@ -91,6 +91,7 @@ def save_song(song_uuid: str, request: SaveSongRequest, user_data: dict = Depend
     try:
         songs_table.save_song(user_data["user_id"], song_data["midi_bytes"], request.song_name, song_data["key"],
                               song_data["scale"], song_data["tempo"], song_data["length"], song_data["complexity"])
+
     except IntegrityError:  # song with that name already exists for this user
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="You already have a song with that name.")
