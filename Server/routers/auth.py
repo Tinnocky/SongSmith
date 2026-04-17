@@ -77,7 +77,7 @@ async def change_password(request: ChangePasswordRequest, user_data: dict = Depe
     """change the users password to the new password, provided the old password is correct"""
 
     if not users_table.verify_pair(user_data["username"], request.old_password):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Old password incorrect.")
 
     # check if new password is strong enough

@@ -59,6 +59,24 @@ class SongManager:
             # delete returns a number
             return song_deleted > 0
 
+    def update_song_name(self, owner_id: int, old_song_name: str, new_song_name: str) -> bool | None:
+        """changes the provided songs name to the new song name. return true if it worked, false if not."""
+        with Session(self._engine) as session:
+            song = session.query(SongTable).filter(
+                SongTable.owner_id == owner_id,
+                SongTable.name == old_song_name
+            ).first()
+
+            if song:  # run only if song exists
+                if song.name == new_song_name:
+                    return False
+
+                song.name = new_song_name
+                session.commit()
+                return True
+
+            return None
+
     def list_songs(self, owner_id: int) -> list[str]:
         """get all songs by the provided user and return them as a list of strings"""
         with Session(self._engine) as session:
@@ -136,8 +154,7 @@ class UserManager:
             return user_deleted > 0
 
     def update_password(self, user_id: int, new_password: str) -> bool:
-        """changes the provided usernames password to the new password.
-        return true if it worked, false if not."""
+        """changes the provided users password to the new password. return true if it worked, false if not."""
         with Session(self._engine) as session:
             user = session.query(UserTable).filter(
                 UserTable.id == user_id

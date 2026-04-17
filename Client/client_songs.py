@@ -1,14 +1,14 @@
 import io
 import time
 from http import HTTPStatus as Status
-
+from pathlib import Path
 import pretty_midi as pm
 
-from Client.client_utils import run_request, SF2_PATH
+from client_utils import run_request, SF2_PATH
 from audio import MidiPlayer
 
 
-def _start_playing_song(midi_bytes):
+def _start_playing_song(midi_bytes: bytes):
     """helper, play the provided audio"""
     midi_object = pm.PrettyMIDI(io.BytesIO(midi_bytes))  # turn bytes to object
     player = MidiPlayer(SF2_PATH)  # create player instance
@@ -164,7 +164,7 @@ def compose():
         print("Failed to compose song.")
 
 
-def see_storage() -> bool:
+def _see_storage() -> bool:
     """run the storage request and print it. returns false if there was nothing in the song list,
     and true if there was."""
 
@@ -178,34 +178,35 @@ def see_storage() -> bool:
 
     song_list = data.get("song_list")
 
-    if song_list:
+    if len(song_list) > 0:
         for song in song_list:
             print(song)
         return True
-
-    return False
+    else:  # len == 0
+        print("No songs found in storage.")
+        return False
 
 
 def handle_storage_requests():
     """choose a song from the stored songs and start PLAY/DELETE/EXTRACT functions"""
 
-    if not see_storage():  # display storage
+    if not _see_storage():  # display storage
         return
 
-    print('Commands: PLAY {name} | DELETE {name} | EXTRACT {name} | "RENAME" {name} | "BACK" to stop.')
+    print('Commands: PLAY {name} | DELETE {name} | EXTRACT {name} | RENAME {name} | "BACK" to stop.')
 
     while True:
         try:
-            prompt = input(">>> ").strip().upper()
+            prompt = input(">>> ").strip()
 
             if prompt == "BACK":
                 return
 
             parts = prompt.split()
-            if len(parts) != 2:
+            if len(parts) < 2:
                 raise ValueError
 
-            command, song_name = parts[0], parts[1]
+            command, song_name = parts[0].upper(), " ".join(parts[1:])
 
             if command not in ["PLAY", "DELETE", "EXTRACT", "RENAME"]:
                 raise ValueError
@@ -228,7 +229,6 @@ def handle_storage_requests():
 
 def play_song(song_name: str):
     """run the play_song route"""
-
     response = run_request("GET", f"/songs/song/{song_name}")
 
     if response.status_code == Status.NOT_FOUND:
@@ -240,7 +240,6 @@ def play_song(song_name: str):
 
 def delete_song(song_name: str):
     """run the delete_song route"""
-
     response = run_request("DELETE", f"/songs/song/{song_name}")
 
     if response.status_code == Status.NOT_FOUND:
@@ -252,10 +251,44 @@ def delete_song(song_name: str):
 
 def extract_song(song_name: str):
     """create a new file with the song midi in it"""
-    # TODO: this function
-    pass
+    response = run_request("GET", f"/songs/song/{song_name}")
+
+    if response.status_code == Status.NOT_FOUND:
+        print(response.json()["detail"])
+
+    elif response.status_code == Status.OK:
+        song_name = response.headers["x-song-name"]
+        downloads = Path.home() / "Downloads"
+        file_path = downloads / f"{song_name}.mid"
+        file_path.write_bytes(response.content)
+        print(f"Song saved to {file_path}")
 
 
 def rename_song(song_name: str):
-    # TODO: this function
-    pass
+    """run the rename_song route"""
+    while True:
+        try:
+            new_song_name = input("Enter new name: ").strip()
+
+            if not new_song_name:
+                raise ValueError
+
+            break
+
+        except ValueError:
+            print("Invalid name.")
+
+    response = run_request(
+        "PATCH",
+        f"/songs/rename/{song_name}",
+        json={
+            "old_song_name": song_name,
+            "new_song_name": new_song_name
+        }
+    )
+
+    if response.status_code == Status.NOT_FOUND or response.status_code == Status.CONFLICT:
+        print(response.json()["detail"])
+
+    elif response.status_code == Status.NO_CONTENT:
+        print("Song renamed.")

@@ -55,7 +55,7 @@ def storage(user_data: dict = Depends(get_user_data),
     """send the songs that are stored in the database under the users name"""
     song_list = songs_table.list_songs(user_data["user_id"])
     if not song_list:
-        return StorageResponse(song_list=None)  # empty
+        return StorageResponse(song_list=[])  # empty
 
     return StorageResponse(song_list=song_list)
 
@@ -71,7 +71,9 @@ def get_song(song_name: str, user_data: dict = Depends(get_user_data),
                             detail=f"Song {song_name} not found.")
 
     return Response(content=midi_bytes,
-                    media_type="audio/midi")
+                    media_type="audio/midi",
+                    headers={"X-Song-Name": song_name}
+                    )
 
 
 class SaveSongRequest(BaseModel):
@@ -124,7 +126,7 @@ class RenameSongRequest(BaseModel):
     new_song_name: str = Field(min_length=1, max_length=50, pattern=r"^[\w\s\-]+$")
 
 
-@router.patch("/rename/", status_code=status.HTTP_204_NO_CONTENT)
+@router.patch("/rename/{song_name}", status_code=status.HTTP_204_NO_CONTENT)
 def rename_song(request: RenameSongRequest, user_data: dict = Depends(get_user_data),
                 songs_table=Depends(get_song_manager)):
     """rename the song with the provided song name."""

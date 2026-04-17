@@ -1,6 +1,6 @@
 from http import HTTPStatus as Status
 
-from Client.client_utils import run_request
+from client_utils import run_request
 
 
 def register() -> tuple[str, str, str]:
@@ -18,6 +18,12 @@ def register() -> tuple[str, str, str]:
 
         if response.status_code == Status.NO_CONTENT:  # got an okay
             return login(username, password)  # login + return the username and token tuple from it
+
+        elif response.status_code == Status.CONFLICT:
+            print("Username already taken.")
+
+        elif response.status_code == Status.BAD_REQUEST:
+            print(response.json()["detail"])
 
         # didn't go through, try again next iteration
 
@@ -68,7 +74,7 @@ def change_password() -> bool | None:
         if response.status_code == Status.NO_CONTENT:  # ok
             return True
 
-        if response.status_code == Status.NOT_FOUND:  # error
+        if response.status_code == Status.UNAUTHORIZED:  # error
             print(response.json()["detail"])
 
         # didn't go through, try again next iteration

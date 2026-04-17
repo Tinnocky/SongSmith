@@ -9,11 +9,14 @@ SF2_FILENAME = "GeneralUser_GS_v1.471.sf2"
 SF2_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), SF2_FILENAME)
 client = httpx.Client(base_url=BASE_URL)
 
-DOWNLOADS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "downloads")
-os.makedirs(DOWNLOADS_PATH, exist_ok=True)  # create a downloads folder if it does not exist
-
 access_token: str | None = None  # global tokens
 refresh_token: str | None = None  # global tokens
+
+
+def set_tokens(new_access_token: str | None, new_refresh_token: str | None) -> None:
+    global access_token, refresh_token
+    access_token = new_access_token
+    refresh_token = new_refresh_token
 
 
 def get_auth_header(token: str) -> dict:
