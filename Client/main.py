@@ -2,6 +2,7 @@ from client_auth import register, login, change_password, delete_account
 from client_songs import compose, handle_storage_requests
 from client_utils import set_tokens
 
+
 def startup_screen():
     print("""
     
