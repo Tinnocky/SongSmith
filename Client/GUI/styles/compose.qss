@@ -1,0 +1,109 @@
+/* ============================================================
+   COMPOSE.QSS
+   ============================================================ */
+
+/* page title */
+ComposeWindow QLabel#page_title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #c0caf5;
+    letter-spacing: -0.5px;
+}
+
+/* form labels */
+ComposeWindow QLabel {
+    color: #565f89;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* compose button — the main CTA, big and prominent */
+ComposeWindow QPushButton#compose_btn {
+    background-color: #7aa2f7;
+    color: #1a1b26;
+    border: none;
+    border-radius: 8px;
+    padding: 13px 32px;
+    font-weight: 700;
+    font-size: 16px;
+    min-height: 26px;
+}
+
+ComposeWindow QPushButton#compose_btn:hover {
+    background-color: #89b4fa;
+    color: #1a1b26;
+    border: none;
+}
+
+ComposeWindow QPushButton#compose_btn:pressed {
+    background-color: #5f8fd6;
+    border: none;
+}
+
+ComposeWindow QPushButton#compose_btn:disabled {
+    background-color: #24283b;
+    color: #565f89;
+    border: 1px solid #2a2f45;
+}
+
+/* stop — amber */
+ComposeWindow QPushButton#stop_btn {
+    background-color: transparent;
+    border: 1px solid #e0af68;
+    color: #e0af68;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-weight: 600;
+}
+
+ComposeWindow QPushButton#stop_btn:hover {
+    background-color: #e0af68;
+    color: #1a1b26;
+    border-color: #e0af68;
+}
+
+/* save — green */
+ComposeWindow QPushButton#save_btn {
+    background-color: transparent;
+    border: 1px solid #9ece6a;
+    color: #9ece6a;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-weight: 600;
+}
+
+ComposeWindow QPushButton#save_btn:hover {
+    background-color: #9ece6a;
+    color: #1a1b26;
+    border-color: #9ece6a;
+}
+
+/* discard — red */
+ComposeWindow QPushButton#discard_btn {
+    background-color: transparent;
+    border: 1px solid #f7768e;
+    color: #f7768e;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-weight: 600;
+}
+
+ComposeWindow QPushButton#discard_btn:hover {
+    background-color: #f7768e;
+    color: #1a1b26;
+    border-color: #f7768e;
+}
+
+/* now playing label */
+ComposeWindow QLabel#now_playing_label {
+    color: #9ece6a;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* playback container */
+ComposeWindow QWidget#playback_widget {
+    background-color: #24283b;
+    border: 1px solid #414868;
+    border-radius: 10px;
+}

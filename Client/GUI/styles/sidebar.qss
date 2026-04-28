@@ -1,0 +1,69 @@
+/* ============================================================
+   SIDEBAR.QSS
+   ============================================================ */
+
+Sidebar {
+    background-color: #16161f;
+    border-right: 2px solid #414868;    /* visible border separating sidebar from content */
+}
+
+/* ── nav buttons ── */
+Sidebar QPushButton {
+    background-color: transparent;
+    border: 1px solid #414868;
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 600;
+    color: #565f89;
+}
+
+Sidebar QPushButton:hover {
+    background-color: #24283b;
+    border-color: #565f89;             /* subtler than active — grey, not blue */
+    color: #c0caf5;
+}
+
+Sidebar QPushButton:pressed {
+    background-color: #2a2f45;
+    color: #c0caf5;
+}
+
+/* active — glows blue, clearly different from hover */
+Sidebar QPushButton[active=true] {
+    background-color: #1e2a4a;         /* blue-tinted bg, not just darker grey */
+    border: 2px solid #7aa2f7;         /* thicker blue border */
+    border-radius: 8px;
+    color: #7aa2f7;
+    padding: 13px 15px;                /* compensate for thicker border */
+}
+
+Sidebar QPushButton[active=true]:hover {
+    background-color: #24366e;         /* slightly lighter on hover but stays blue */
+    border-color: #89b4fa;
+    color: #89b4fa;
+}
+
+/* logout */
+Sidebar QPushButton#logout_btn {
+    color: #f7768e;
+    border: 1px solid #f7768e;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 14px 16px;
+}
+
+Sidebar QPushButton#logout_btn:hover {
+    background-color: #f7768e;
+    border-color: #f7768e;
+    color: #1a1b26;
+}
+
+/* username label */
+Sidebar QLabel#username_label {
+    color: #c0caf5;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 4px 12px;
+}

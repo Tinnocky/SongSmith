@@ -4,7 +4,7 @@ from http import HTTPStatus as Status
 from pathlib import Path
 import pretty_midi as pm
 
-from client_utils import run_request, SF2_PATH
+from Client.client_utils import run_request, SF2_PATH
 from audio import MidiPlayer
 
 
@@ -18,72 +18,8 @@ def _start_playing_song(midi_bytes: bytes):
     player.stop()
 
 
-def compose():
-    """input key, tempo and length, run compose response """
-
-    while True:
-        try:
-            # get all parameters for song creation...
-            print('Enter values for song creation (or "BACK", to stop creation). ')
-
-            key = input("Enter Key: ").strip().upper()
-            if key == "BACK":
-                return
-
-            scale = input("Enter Scale: ").strip().upper()
-            if scale == "BACK":
-                return
-
-            tempo = input("Enter Tempo: ").strip().upper()
-            if tempo == "BACK":
-                return
-
-            chords_instrument = input("Enter Chords Instrument: ").strip().upper()
-            if chords_instrument == "BACK":
-                return
-
-            melody_instrument = input("Enter Melody Instrument: ").strip().upper()
-            if melody_instrument == "BACK":
-                return
-
-            verse_bars = input("Enter Verse Bars: ").strip().upper()
-            if verse_bars == "BACK":
-                return
-
-            chorus_bars = input("Enter Chorus Bars: ").strip().upper()
-            if chorus_bars == "BACK":
-                return
-
-            has_drums_str = input("Add drums? (YES or NO): ").strip().upper()
-            if has_drums_str == "BACK":
-                return
-
-            complexity = input("Enter Complexity: ").strip().upper()
-            if complexity == "BACK":
-                return
-
-            tempo, verse_bars, chorus_bars = int(tempo), int(verse_bars), int(chorus_bars)
-
-            if key not in ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]:
-                raise ValueError
-            if scale not in ["MAJOR", "MINOR", "MIXOLYDIAN"]:
-                raise ValueError
-            if (chords_instrument not in ["PIANO", "NYLON GUITAR", "ROCK GUITAR", "SYNTH"] or
-                    melody_instrument not in ["PIANO", "NYLON GUITAR", "ROCK GUITAR", "SYNTH"]):
-                raise ValueError
-            if tempo <= 0 or verse_bars <= 0 or chorus_bars <= 0:
-                raise ValueError
-            if has_drums_str not in ["YES", "NO"]:
-                raise ValueError
-            if complexity not in ["SIMPLE", "MEDIUM", "COMPLEX"]:
-                raise ValueError
-
-            break
-
-        except ValueError:
-            print("Please enter valid parameters.")
-
-    has_drums = has_drums_str == "YES"
+def compose(key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
+            verse_bars: int, chorus_bars: int, has_drums: bool, complexity: str):
 
     compose_response = run_request(
         "POST",
@@ -163,6 +99,12 @@ def compose():
     else:
         print("Failed to compose song.")
 
+
+def save_song():
+    pass
+
+def discard_song():
+    pass
 
 def _see_storage() -> bool:
     """run the storage request and print it. returns false if there was nothing in the song list,

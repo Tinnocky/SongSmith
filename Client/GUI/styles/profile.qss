@@ -1,0 +1,100 @@
+/* ============================================================
+   PROFILE.QSS
+   ============================================================ */
+
+/* username — large hero text */
+ProfileWindow QLabel#username_label {
+    color: #c0caf5;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+/* songs saved stat */
+ProfileWindow QLabel#songs_saved_label {
+    color: #565f89;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* section titles */
+ProfileWindow QLabel#section_title {
+    color: #7aa2f7;
+    font-size: 18px;                   /* was 16px */
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+/* danger zone title */
+ProfileWindow QLabel#danger_title {
+    color: #f7768e;
+    font-size: 18px;                   /* was 16px */
+    font-weight: 700;
+}
+
+/* danger description */
+ProfileWindow QLabel#danger_description {
+    color: #565f89;
+    font-size: 15px;                   /* was 13px */
+}
+
+/* general form labels */
+ProfileWindow QLabel {
+    color: #565f89;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* change password — accent */
+ProfileWindow QPushButton#change_password_btn {
+    background-color: #7aa2f7;
+    color: #1a1b26;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+ProfileWindow QPushButton#change_password_btn:hover {
+    background-color: #89b4fa;
+    border: none;
+    color: #1a1b26;
+}
+
+ProfileWindow QPushButton#change_password_btn:pressed {
+    background-color: #5f8fd6;
+    border: none;
+}
+
+/* delete account — red outline, fills on hover */
+ProfileWindow QPushButton#delete_account_btn {
+    background-color: transparent;
+    border: 1px solid #f7768e;
+    color: #f7768e;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+ProfileWindow QPushButton#delete_account_btn:hover {
+    background-color: #f7768e;
+    color: #1a1b26;
+    border-color: #f7768e;
+}
+
+QMessageBox {
+    background-color: #1a1b26;
+    color: #c0caf5;
+}
+
+QMessageBox QLabel {
+    color: #c0caf5;
+    font-size: 14px;
+}
+
+QMessageBox QPushButton {
+    min-width: 80px;
+    padding: 6px 16px;
+}

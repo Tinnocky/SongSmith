@@ -37,8 +37,8 @@ def run_request(method, url, **kwargs) -> Response:
     response = client.request(method, url, headers=headers, **kwargs)
 
     if response.status_code == Status.UNAUTHORIZED:
-        if not refresh_access_token():
-            raise RuntimeError("Session expired. Please log in again.")
+        if not refresh_token or not refresh_access_token():
+            return response
 
         headers.update(get_auth_header(access_token))
         response = client.request(method, url, headers=headers, **kwargs)
@@ -59,5 +59,4 @@ def refresh_access_token() -> bool:
         access_token = response.json()["access_token"]
         return True
 
-    print("Session expired. Please log in again.")
     return False

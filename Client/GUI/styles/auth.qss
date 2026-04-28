@@ -1,0 +1,97 @@
+/* ============================================================
+   AUTH.QSS
+   ============================================================ */
+
+AuthWindow {
+    background-color: #1a1b26;
+}
+
+/* app title */
+AuthWindow QLabel#app_title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #7aa2f7;
+    letter-spacing: -1px;
+}
+
+AuthWindow QLabel#app_subtitle {
+    font-size: 14px;
+    color: #565f89;
+}
+
+/* form row labels */
+AuthWindow QLabel {
+    color: #565f89;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* submit button */
+AuthWindow QPushButton#submit_btn {
+    background-color: #7aa2f7;
+    color: #1a1b26;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-weight: 700;
+    font-size: 16px;
+    min-height: 24px;
+}
+
+AuthWindow QPushButton#submit_btn:hover {
+    background-color: #89b4fa;
+    color: #1a1b26;
+    border: none;
+}
+
+AuthWindow QPushButton#submit_btn:pressed {
+    background-color: #5f8fd6;
+    border: none;
+}
+
+/* switch mode — bigger, more visible */
+AuthWindow QPushButton#switch_mode_btn {
+    background-color: transparent;
+    border: none;
+    color: #7aa2f7;
+    font-size: 15px;                   /* was 13px */
+    font-weight: 600;                  /* was 500 */
+    padding: 8px 4px;                  /* was 6px */
+}
+
+AuthWindow QPushButton#switch_mode_btn:hover {
+    color: #89b4fa;
+    background-color: transparent;
+    border: none;
+}
+
+/* reveal button */
+AuthWindow QPushButton#reveal_password_btn {
+    background-color: transparent;
+    border: 1px solid #414868;
+    border-radius: 8px;
+    color: #565f89;
+    padding: 6px 12px;
+    font-size: 13px;
+    min-width: 54px;
+    max-width: 54px;
+    font-weight: 500;
+}
+
+AuthWindow QPushButton#reveal_password_btn:hover {
+    color: #c0caf5;
+    border-color: #565f89;
+    background-color: transparent;
+}
+
+AuthWindow QPushButton#reveal_password_btn:checked {
+    color: #7aa2f7;
+    border-color: #7aa2f7;
+}
+
+/* error label */
+AuthWindow QLabel#error_label {
+    color: #f7768e;
+    font-size: 13px;
+    font-weight: 500;
+}
