@@ -1,13 +1,14 @@
 from pathlib import Path
 
+from PySide6.QtCore import QThread
 from PySide6.QtWidgets import *
 
-from Client import client_auth, client_utils
+from Client import client_auth, client_utils, client_songs
 from Client.GUI.auth_gui import AuthWindow
-from Client.GUI.compose_gui import ComposeWindow
+from Client.GUI.compose_gui import ComposeWindow, ComposeWorker
 from Client.GUI.profile_gui import ProfileWindow
 from Client.GUI.sidebar_gui import Sidebar
-from Client.GUI.storage_gui import StorageWindow
+from Client.GUI.storage_gui import StorageWindow, SongRow
 
 
 class MainWindow(QMainWindow):
@@ -60,8 +61,9 @@ class MainWindow(QMainWindow):
         self.auth_window.try_login.connect(self._handle_auth)
         self.auth_window.try_register.connect(self._handle_auth)
         self.profile_window.try_change_password.connect(self._handle_change_password)
-
-        # self.handle_login("TestUser")  # for testing
+        self.profile_window.try_delete_account.connect(self._handle_change_password)
+        self.storage_window.try_see_storage.connect(self._handle_see_storage)
+        self.compose_window.try_compose.connect(self._handle_compose)
 
     @staticmethod
     def load_design() -> str:
@@ -110,8 +112,67 @@ class MainWindow(QMainWindow):
         if is_deleted:
             self._handle_logout()
 
+    def _handle_see_storage(self):
+        list_widget = self.storage_window.song_list
+        list_widget.clear()
+
+        song_list = client_songs.see_storage()
+
+        if not song_list:
+            return  # nothing to show
+
+        for song in song_list:
+            item = QListWidgetItem()
+            widget = SongRow(song)
+
+            item.setSizeHint(widget.sizeHint())
+
+            list_widget.addItem(item)
+            list_widget.setItemWidget(item, widget)
+
+    def _handle_compose(self, key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
+                        verse_bars: int, chorus_bars: int, has_drums: bool, complexity: str):
+        self.compose_window.show_progress()  # switch to progress bar
+        self.compose_window.compose_btn.setEnabled(False)
+
+        # initialize thread
+        self.thread = QThread()
+        self.worker = ComposeWorker(
+            key, scale, tempo,
+            chords_instrument, melody_instrument,
+            verse_bars, chorus_bars,
+            has_drums, complexity
+        )
+        self.worker.moveToThread(self.thread)
+
+        # connect and run thread
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self._on_compose_success)
+        self.worker.error.connect(self._on_compose_error)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.error.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.worker.error.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.start()
+
+    def _on_compose_success(self, result):
+        self.compose_window.show_playback()
+        self.compose_window.now_playing_label.setText("Song ready!")
+        self.compose_window.compose_btn.setEnabled(True)
+        # add a pass to player
+
+    def _on_compose_error(self, error):
+        QMessageBox.critical(self, "Compose failed", error)
+        self.compose_window.reset()
+        self.compose_window.compose_btn.setEnabled(True)
+
     def _handle_logout(self):
         # clear tokens
+        if hasattr(self, "thread") and self.thread.isRunning(): # do not log out while thread is running
+            self.thread.quit()
+            self.thread.wait()
+
         self._username = None
         self._access_token = None
         self._refresh_token = None

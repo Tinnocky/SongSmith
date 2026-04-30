@@ -54,10 +54,8 @@ def storage(user_data: dict = Depends(get_user_data),
             songs_table=Depends(get_song_manager)) -> StorageResponse:
     """send the songs that are stored in the database under the users name"""
     song_list = songs_table.list_songs(user_data["user_id"])
-    if not song_list:
-        return StorageResponse(song_list=[])  # empty
 
-    return StorageResponse(song_list=song_list)
+    return StorageResponse(song_list=song_list) # doesn't matter if its empty
 
 
 @router.get("/song/{song_name}")
@@ -72,8 +70,7 @@ def get_song(song_name: str, user_data: dict = Depends(get_user_data),
 
     return Response(content=midi_bytes,
                     media_type="audio/midi",
-                    headers={"X-Song-Name": song_name}
-                    )
+                    headers={"X-Song-Name": song_name})
 
 
 class SaveSongRequest(BaseModel):

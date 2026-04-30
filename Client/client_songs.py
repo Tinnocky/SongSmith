@@ -2,10 +2,11 @@ import io
 import time
 from http import HTTPStatus as Status
 from pathlib import Path
+
 import pretty_midi as pm
 
 from Client.client_utils import run_request, SF2_PATH
-from audio import MidiPlayer
+from Client.audio import MidiPlayer
 
 
 def _start_playing_song(midi_bytes: bytes):
@@ -19,9 +20,9 @@ def _start_playing_song(midi_bytes: bytes):
 
 
 def compose(key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
-            verse_bars: int, chorus_bars: int, has_drums: bool, complexity: str):
-
-    compose_response = run_request(
+            verse_bars: int, chorus_bars: int, has_drums: bool, complexity: str) -> tuple[bytes, str] | str:
+    """make compose request. returns a tuple with midi_bytes, song_uuid on success, error string on failure."""
+    response = run_request(
         "POST",
         "/songs/compose",
         json={
@@ -37,189 +38,90 @@ def compose(key: str, scale: str, tempo: int, chords_instrument: str, melody_ins
         }
     )
 
-    if compose_response.status_code == Status.OK:
-        # start playing the song
-        _start_playing_song(compose_response.content)
+    if response.status_code == Status.OK:
+        song_uuid = response.headers.get("X-Song-Id")
+        return response.content, song_uuid
 
-        # decide to save or discard song
-        while True:
-            try:
-                to_save_str = input("Save song? (YES or NO): ").strip().upper()
-                if to_save_str not in ["YES", "NO"]:
-                    raise ValueError
-
-                break
-
-            except ValueError:
-                print("Please enter valid parameters.")
-
-        to_save = to_save_str == "YES"
-        song_uuid = compose_response.headers.get("X-Song-Id")
-        if not song_uuid:
-            print("Error: missing song UUID from server.")
-            return
-
-        if to_save:  # save
-            while True:
-                name = input("Enter song name: ").strip()
-                if not name:
-                    print("Invalid name.")
-                    continue
-
-                save_response = run_request(
-                    "POST",
-                    f"/songs/save/{song_uuid}",
-                    json={"song_name": name}  # server checks for correct spelling
-                )
-
-                if save_response.status_code == Status.CREATED:
-                    print("Song saved!")
-                    break
-
-                elif save_response.status_code == Status.UNPROCESSABLE_ENTITY:
-                    print("Invalid song name.")
-
-                elif save_response.status_code == Status.CONFLICT:
-                    print("Song name already exists.")
-
-                elif save_response.status_code == Status.NOT_FOUND:
-                    print("Song expired or missing.")
-
-        else:  # discard
-            discard_response = run_request(
-                "DELETE",
-                f"/songs/compose/{song_uuid}"
-            )
-
-            if discard_response.status_code == Status.NO_CONTENT:
-                print("Song discarded.")
-
-            elif discard_response.status_code == Status.NOT_FOUND:
-                print(discard_response.json()["detail"])
-    else:
-        print("Failed to compose song.")
+    return response.json().get("detail", "Failed to compose song.")
 
 
-def save_song():
-    pass
+def save_song(song_uuid: str, song_name: str) -> str | None:
+    """saves song to user's DB, returns any errors."""
+    response = run_request(
+        "POST",
+        f"/songs/save/{song_uuid}",
+        json={"song_name": song_name}
+    )
 
-def discard_song():
-    pass
+    if response.status_code == Status.CREATED:
+        return None
 
-def _see_storage() -> bool:
-    """run the storage request and print it. returns false if there was nothing in the song list,
-    and true if there was."""
+    return response.json().get("detail", "Something went wrong.")
 
+
+def discard_song(song_uuid: str) -> str | None:
+    """discards song from the cache, returns any errors."""
+    response = run_request(
+        "DELETE",
+        f"/songs/compose/{song_uuid}"
+    )
+
+    if response.status_code == Status.NO_CONTENT:
+        return None
+
+    return response.json().get("detail", "Something went wrong.")
+
+
+def see_storage() -> list[dict] | None:
     response = run_request("GET", "/songs/storage")
 
     if response.status_code != Status.OK:
-        print("Failed to fetch storage.")
-        return False
+        return None
 
-    data = response.json()
-
-    song_list = data.get("song_list")
-
-    if len(song_list) > 0:
-        for song in song_list:
-            print(song)
-        return True
-    else:  # len == 0
-        print("No songs found in storage.")
-        return False
+    song_list = response.json().get("song_list")
+    return song_list  # return song_list even if its empty
 
 
-def handle_storage_requests():
-    """choose a song from the stored songs and start PLAY/DELETE/EXTRACT functions"""
-
-    if not _see_storage():  # display storage
-        return
-
-    print('Commands: PLAY {name} | DELETE {name} | EXTRACT {name} | RENAME {name} | "BACK" to stop.')
-
-    while True:
-        try:
-            prompt = input(">>> ").strip()
-
-            if prompt == "BACK":
-                return
-
-            parts = prompt.split()
-            if len(parts) < 2:
-                raise ValueError
-
-            command, song_name = parts[0].upper(), " ".join(parts[1:])
-
-            if command not in ["PLAY", "DELETE", "EXTRACT", "RENAME"]:
-                raise ValueError
-
-            break
-
-        except ValueError:
-            print("Please enter a valid command and song id.")
-
-    # run the corresponding function
-    handlers = {
-        "PLAY": play_song,
-        "DELETE": delete_song,
-        "EXTRACT": extract_song,
-        "RENAME": rename_song
-    }
-
-    handlers[command](song_name)
-
-
-def play_song(song_name: str):
-    """run the play_song route"""
+def play_song(song_name: str) -> str | None:
+    """run the play_song route. returns any errors."""
     response = run_request("GET", f"/songs/song/{song_name}")
 
-    if response.status_code == Status.NOT_FOUND:
-        print(response.json()["detail"])
-
-    elif response.status_code == Status.OK:
+    if response.status_code == Status.OK:
         _start_playing_song(response.content)
+        return None
+
+    # didn't go through
+    return response.json().get("detail", "Something went wrong.")
 
 
-def delete_song(song_name: str):
-    """run the delete_song route"""
+def delete_song(song_name: str) -> str | None:
+    """run the delete_song route. returns any errors."""
     response = run_request("DELETE", f"/songs/song/{song_name}")
 
-    if response.status_code == Status.NOT_FOUND:
-        print(response.json()["detail"])
+    if response.status_code == Status.NO_CONTENT:
+        return None
 
-    elif response.status_code == Status.NO_CONTENT:
-        print("Song deleted.")
+    # didn't go through
+    return response.json().get("detail", "Something went wrong.")  # NOT_FOUND
 
 
-def extract_song(song_name: str):
+def extract_song(song_name: str) -> str:
     """create a new file with the song midi in it"""
     response = run_request("GET", f"/songs/song/{song_name}")
 
-    if response.status_code == Status.NOT_FOUND:
-        print(response.json()["detail"])
-
-    elif response.status_code == Status.OK:
+    if response.status_code == Status.OK:
         song_name = response.headers["x-song-name"]
         downloads = Path.home() / "Downloads"
         file_path = downloads / f"{song_name}.mid"
         file_path.write_bytes(response.content)
         print(f"Song saved to {file_path}")
 
+    # didn't go through
+    return response.json().get("detail", "Something went wrong.")
 
-def rename_song(song_name: str):
+
+def rename_song(song_name: str, new_song_name: str):
     """run the rename_song route"""
-    while True:
-        try:
-            new_song_name = input("Enter new name: ").strip()
-
-            if not new_song_name:
-                raise ValueError
-
-            break
-
-        except ValueError:
-            print("Invalid name.")
-
     response = run_request(
         "PATCH",
         f"/songs/rename/{song_name}",
@@ -229,8 +131,8 @@ def rename_song(song_name: str):
         }
     )
 
-    if response.status_code == Status.NOT_FOUND or response.status_code == Status.CONFLICT:
-        print(response.json()["detail"])
-
-    elif response.status_code == Status.NO_CONTENT:
+    if response.status_code == Status.NO_CONTENT:
         print("Song renamed.")
+
+    # didn't go through
+    return response.json().get("detail", "Something went wrong.")  # NOT_FOUND or CONFLICT

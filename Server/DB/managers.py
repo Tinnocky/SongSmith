@@ -77,16 +77,21 @@ class SongManager:
 
             return None
 
-    def list_songs(self, owner_id: int) -> list[str]:
-        """get all songs by the provided user and return them as a list of strings"""
+    def list_songs(self, owner_id: int) -> list[dict]:
         with Session(self._engine) as session:
             song_list = session.query(SongTable).filter(
                 SongTable.owner_id == owner_id
             ).all()
 
         return [
-            f"{s.name}: {s.root_key} {s.scale} | {s.tempo} BPM | {s.length:.2f} Seconds | Complexity: {s.complexity}"
-            for s in song_list
+            {
+                "name": song.name,
+                "key": song.root_key,
+                "scale": song.scale,
+                "seconds": song.length,
+                "complexity": song.complexity,
+            }
+            for song in song_list
         ]
 
     def get_midi_by_name(self, owner_id: int, song_name: str) -> bytes | None:

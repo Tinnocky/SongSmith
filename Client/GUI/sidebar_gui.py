@@ -43,9 +43,6 @@ class Sidebar(QWidget):
         self.username_label.setObjectName("username_label")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)  # make sure this has a border
 
-    def set_username(self, username: str):
-        self.username_label.setText(username)
-
     def set_active(self, index: int):
         """changes the current active screen (in design)"""
         # remove active from current
@@ -59,3 +56,6 @@ class Sidebar(QWidget):
         btn.style().unpolish(btn)
         btn.style().polish(btn)
         self._active_btn = btn
+
+    def set_username(self, username: str):
+        self.username_label.setText(username)

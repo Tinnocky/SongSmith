@@ -1,15 +1,19 @@
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import *
 
 
 class StorageWindow(QWidget):
+    try_see_storage = Signal()
+
     def __init__(self):
         super().__init__()
 
+        # create gui objects
         self.refresh_btn = QPushButton("Refresh")
-        self.refresh_btn.clicked.connect(self.handle_refresh)
+        self.refresh_btn.clicked.connect(lambda: self.try_see_storage.emit())
 
         self.song_list = QListWidget()
-        self.song_list.itemSelectionChanged.connect(self.on_selection_changed)
+        self.song_list.itemSelectionChanged.connect(self._on_selection_changed)
 
         self.play_btn = QPushButton("Play")
         self.rename_btn = QPushButton("Rename")
@@ -21,8 +25,7 @@ class StorageWindow(QWidget):
         self.extract_btn.clicked.connect(self.handle_extract)
         self.delete_btn.clicked.connect(self.handle_delete)
 
-        # all action buttons disabled until a song is selected
-        self._set_action_buttons_enabled(False)
+        self._set_action_buttons_enabled(False)  # all action buttons disabled until a song is selected
 
         buttons_row = QHBoxLayout()
         buttons_row.addWidget(self.play_btn)
@@ -42,7 +45,7 @@ class StorageWindow(QWidget):
         layout.addWidget(self.song_list)
         layout.addLayout(buttons_row)
 
-    def on_selection_changed(self):
+    def _on_selection_changed(self):
         """enable action buttons only when a song is selected"""
         has_selection = len(self.song_list.selectedItems()) > 0
         self._set_action_buttons_enabled(has_selection)
@@ -52,10 +55,6 @@ class StorageWindow(QWidget):
         self.rename_btn.setEnabled(enabled)
         self.extract_btn.setEnabled(enabled)
         self.delete_btn.setEnabled(enabled)
-
-    def handle_refresh(self):
-        """placeholder — will fetch song list from server"""
-        pass
 
     def handle_play(self):
         """placeholder — will fetch and play selected song"""
@@ -73,10 +72,23 @@ class StorageWindow(QWidget):
         """placeholder — will delete selected song"""
         pass
 
-    def selected_song_name(self) -> str | None:
-        """helper — returns the name portion of the selected song string, or None"""
-        items = self.song_list.selectedItems()
-        if not items:
-            return None
-        # server format is "SongName: C Major | 120 BPM | ..." etc.
-        return items[0].text().split(":")[0].strip()
+
+class SongRow(QWidget):
+    """a song in storage"""
+
+    def __init__(self, song: dict):
+        super().__init__()
+
+        name_label = QLabel(song["name"])
+        name_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+
+        info_label = QLabel(
+            f"{song['key']} {song['scale']} | {song['seconds']}s | {song['complexity']}"
+        )
+        info_label.setStyleSheet("color: gray; font-size: 12px;")
+        info_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+
+        layout = QHBoxLayout(self)
+        layout.addWidget(name_label)
+        layout.addStretch()
+        layout.addWidget(info_label)

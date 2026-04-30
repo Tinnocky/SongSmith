@@ -1,5 +1,7 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal, QObject, Slot
 from PySide6.QtWidgets import *
+
+from Client import client_songs
 
 
 class ComposeWindow(QWidget):
@@ -10,9 +12,13 @@ class ComposeWindow(QWidget):
     BAR_AMOUNTS = ["4", "8", "12", "16"]
     COMPLEXITIES = ["Simple", "Medium", "Complex"]
 
+    # signals
+    try_compose = Signal(str, str, int, str, str, int, int, bool, str)
+
     def __init__(self):
         super().__init__()
 
+        # create gui objects
         # form fields
         self.key_input = QComboBox()
         self.key_input.addItems(self.NOTES)
@@ -44,7 +50,7 @@ class ComposeWindow(QWidget):
         self.complexity_input.setCurrentIndex(1)  # default to Medium
 
         self.compose_btn = QPushButton("Compose Song")
-        self.compose_btn.clicked.connect(self.handle_compose)
+        self.compose_btn.clicked.connect(self._handle_compose)
 
         # make form
         form = QFormLayout()
@@ -68,12 +74,12 @@ class ComposeWindow(QWidget):
         # playback section (hidden until song is ready)
         self.now_playing_label = QLabel("Song ready!")
         self.stop_btn = QPushButton("Stop")
-        self.stop_btn.clicked.connect(self.handle_stop)
+        self.stop_btn.clicked.connect(self._handle_stop)
 
         self.save_btn = QPushButton("Save Song")
         self.discard_btn = QPushButton("Discard")
-        self.save_btn.clicked.connect(self.handle_save)
-        self.discard_btn.clicked.connect(self.handle_discard)
+        self.save_btn.clicked.connect(self._handle_save)
+        self.discard_btn.clicked.connect(self._handle_discard)
 
         save_discard_row = QHBoxLayout()
         save_discard_row.addWidget(self.save_btn)
@@ -105,19 +111,31 @@ class ComposeWindow(QWidget):
         main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.playback_widget)
 
-    def handle_compose(self):
+    def _handle_compose(self):
         """placeholder — will trigger compose request and show progress bar"""
+        key = self.key_input.currentText()
+        scale = self.scale_input.currentText()
+        tempo = self.tempo_input.value()
+        chords_instrument = self.chords_instrument_input.currentText()
+        melody_instrument = self.melody_instrument_input.currentText()
+
+        verse_bars = int(self.verse_bars_input.currentText())
+        chorus_bars = int(self.chorus_bars_input.currentText())
+
+        has_drums = self.has_drums_input.isChecked()
+        complexity = self.complexity_input.currentText()
+
+        self.try_compose.emit(key, scale, tempo, chords_instrument, melody_instrument,
+                              verse_bars, chorus_bars, has_drums, complexity)
+
+    def _handle_stop(self):
         pass
 
-    def handle_stop(self):
-        """placeholder — will stop audio playback"""
-        pass
-
-    def handle_save(self):
+    def _handle_save(self):
         """placeholder — will ask for song name and save"""
         pass
 
-    def handle_discard(self):
+    def _handle_discard(self):
         """placeholder — will discard the composed song"""
         pass
 
@@ -139,3 +157,40 @@ class ComposeWindow(QWidget):
         self.progress_bar.setVisible(False)
         self.playback_widget.setVisible(False)
         self.compose_btn.setEnabled(True)
+
+
+class ComposeWorker(QObject):
+    """a class used to compose in a separate thread than the GUI"""
+    finished = Signal(object)
+    error = Signal(str)
+
+    def __init__(self, key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
+                 verse_bars: int, chorus_bars: int, has_drums: bool, complexity: str):
+        super().__init__()
+        self.key = key
+        self.scale = scale
+        self.tempo = tempo
+        self.chords_instrument = chords_instrument
+        self.melody_instrument = melody_instrument
+        self.verse_bars = verse_bars
+        self.chorus_bars = chorus_bars
+        self.has_drums = has_drums
+        self.complexity = complexity
+
+    @Slot()
+    def run(self):
+        try:
+            result = client_songs.compose(
+                self.key,
+                self.scale,
+                self.tempo,
+                self.chords_instrument,
+                self.melody_instrument,
+                self.verse_bars,
+                self.chorus_bars,
+                self.has_drums,
+                self.complexity
+            )
+            self.finished.emit(result)
+        except Exception as e:
+            self.error.emit(str(e))

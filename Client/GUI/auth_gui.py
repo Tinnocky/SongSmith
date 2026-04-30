@@ -21,7 +21,7 @@ class AuthWindow(QWidget):
 
         self.reveal_password_btn = QPushButton("Show")
         self.reveal_password_btn.setCheckable(True)
-        self.reveal_password_btn.toggled.connect(self.toggle_see_password)
+        self.reveal_password_btn.toggled.connect(self._toggle_see_password)
 
         password_row = QHBoxLayout()
         password_row.addWidget(self.password_input)
@@ -35,7 +35,7 @@ class AuthWindow(QWidget):
         self.confirm_password_input.setVisible(False)  # isn't visible in login mode
 
         self.submit_btn = QPushButton("Login")
-        self.submit_btn.clicked.connect(self.handle_submit)
+        self.submit_btn.clicked.connect(self._handle_submit)
 
         self.switch_mode_btn = QPushButton("Don't have an account? Register")
         self.switch_mode_btn.clicked.connect(self.toggle_auth_mode)
@@ -88,14 +88,14 @@ class AuthWindow(QWidget):
             else "Already have an account? Login"
         )
 
-    def toggle_see_password(self, button_checked: bool):
+    def _toggle_see_password(self, button_checked: bool):
         """toggle password visibility"""
         self.reveal_password_btn.setText("Hide" if button_checked else "Show")
         mode = QLineEdit.EchoMode.Normal if button_checked else QLineEdit.EchoMode.Password
         self.password_input.setEchoMode(mode)
         self.confirm_password_input.setEchoMode(mode)
 
-    def handle_submit(self):
+    def _handle_submit(self):
         """validate fields and emit a signal to MainWindow"""
         username = self.username_input.text()
         password = self.password_input.text()

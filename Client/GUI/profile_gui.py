@@ -13,13 +13,10 @@ class ProfileWindow(QWidget):
         # header
         self.username_label = QLabel("Username")
         self.username_label.setObjectName("username_label")
-        self.songs_saved_label = QLabel("Songs saved: –")
-        self.songs_saved_label.setObjectName("songs_saved_label")
 
         header_layout = QVBoxLayout()
         header_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         header_layout.addWidget(self.username_label)
-        header_layout.addWidget(self.songs_saved_label)
 
         header_separator = QFrame()
         header_separator.setFrameShape(QFrame.Shape.HLine)
@@ -42,7 +39,7 @@ class ProfileWindow(QWidget):
 
         self.change_password_btn = QPushButton("Change Password")
         self.change_password_btn.setObjectName("change_password_btn")
-        self.change_password_btn.clicked.connect(self.handle_change_password)
+        self.change_password_btn.clicked.connect(self._handle_change_password)
 
         # error label
         self.error_label = QLabel("")
@@ -69,7 +66,7 @@ class ProfileWindow(QWidget):
 
         self.delete_account_btn = QPushButton("Delete Account")
         self.delete_account_btn.setObjectName("delete_account_btn")
-        self.delete_account_btn.clicked.connect(self.handle_delete_account)
+        self.delete_account_btn.clicked.connect(self._handle_delete_account)
 
         danger_layout = QVBoxLayout()
         danger_layout.addWidget(self.danger_title)
@@ -88,13 +85,8 @@ class ProfileWindow(QWidget):
         layout.addStretch()
         layout.addLayout(danger_layout)
 
-    def set_username(self, username: str):
-        self.username_label.setText(username)
-
-    def set_songs_saved(self, count: int):
-        self.songs_saved_label.setText(f"Songs saved: {count}")
-
-    def handle_delete_account(self):
+    def _handle_delete_account(self):
+        """run a confirmation check and emit a try_delete_account signal to main window"""
         # initialize a confirm deleting account popup box
         confirm_popup = QMessageBox(self)
         confirm_popup.setWindowTitle("Delete Account")
@@ -106,7 +98,8 @@ class ProfileWindow(QWidget):
         if confirm_popup.exec() == QMessageBox.StandardButton.Yes:
             self.try_delete_account.emit()
 
-    def handle_change_password(self):
+    def _handle_change_password(self):
+        """validate fields and emit a try_change_password signal to main window"""
         old_password = self.old_password_input.text()
         new_password = self.new_password_input.text()
         confirm_new_password = self.confirm_new_password_input.text()
@@ -122,15 +115,21 @@ class ProfileWindow(QWidget):
         self.try_change_password.emit(old_password, new_password)
 
     def show_error(self, message: str):
+        """show an error message under the change password fields"""
         self.error_label.setStyleSheet("color: #f7768e;")
         self.error_label.setText(message)
         self.error_label.setVisible(True)
 
     def show_success(self, message: str):
+        """show a success message under the change password fields"""
         self.error_label.setStyleSheet("color: #9ece6a;")
         self.error_label.setText(message)
         self.error_label.setVisible(True)
 
     def hide_error(self):
+        """remove an error message under the change password fields"""
         self.error_label.setVisible(False)
         self.error_label.setStyleSheet("")
+
+    def set_username(self, username: str):
+        self.username_label.setText(username)
