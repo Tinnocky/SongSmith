@@ -105,8 +105,8 @@ def delete_song(song_name: str) -> str | None:
     return response.json().get("detail", "Something went wrong.")  # NOT_FOUND
 
 
-def extract_song(song_name: str) -> str:
-    """create a new file with the song midi in it"""
+def extract_song(song_name: str) -> str | None:
+    """create a new file with the song midi in it. returns any errors"""
     response = run_request("GET", f"/songs/song/{song_name}")
 
     if response.status_code == Status.OK:
@@ -115,12 +115,13 @@ def extract_song(song_name: str) -> str:
         file_path = downloads / f"{song_name}.mid"
         file_path.write_bytes(response.content)
         print(f"Song saved to {file_path}")
+        return None
 
     # didn't go through
     return response.json().get("detail", "Something went wrong.")
 
 
-def rename_song(song_name: str, new_song_name: str):
+def rename_song(song_name: str, new_song_name: str) -> str | None:
     """run the rename_song route"""
     response = run_request(
         "PATCH",
@@ -132,7 +133,7 @@ def rename_song(song_name: str, new_song_name: str):
     )
 
     if response.status_code == Status.NO_CONTENT:
-        print("Song renamed.")
+        return None
 
     # didn't go through
     return response.json().get("detail", "Something went wrong.")  # NOT_FOUND or CONFLICT

@@ -7,6 +7,8 @@ class Sidebar(QWidget):
     logout_clicked = Signal()
 
     def __init__(self):
+        logout_clicked = Signal()
+
         super().__init__()
         self.setFixedWidth(150)
 

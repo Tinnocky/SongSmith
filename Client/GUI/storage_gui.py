@@ -80,12 +80,12 @@ class SongRow(QWidget):
         super().__init__()
 
         name_label = QLabel(song["name"])
-        name_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+        name_label.setObjectName("song_name_label")
 
         info_label = QLabel(
             f"{song['key']} {song['scale']} | {song['seconds']}s | {song['complexity']}"
         )
-        info_label.setStyleSheet("color: gray; font-size: 12px;")
+        info_label.setObjectName("song_info_label")
         info_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
         layout = QHBoxLayout(self)

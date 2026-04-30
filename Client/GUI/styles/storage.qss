@@ -113,3 +113,14 @@ StorageWindow QPushButton#delete_btn:disabled {
     color: #565f89;
     background-color: transparent;
 }
+
+SongRow QLabel#song_name_label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #c0caf5;
+}
+
+SongRow QLabel#song_info_label {
+    font-size: 12px;
+    color: #565f89;
+}

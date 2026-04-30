@@ -58,12 +58,13 @@ class MainWindow(QMainWindow):
         self.sidebar.logout_clicked.connect(self._handle_logout)
 
         # connect all signals
-        self.auth_window.try_login.connect(self._handle_auth)
-        self.auth_window.try_register.connect(self._handle_auth)
+        self.auth_window.try_auth.connect(self._handle_auth)
         self.profile_window.try_change_password.connect(self._handle_change_password)
-        self.profile_window.try_delete_account.connect(self._handle_change_password)
+        self.profile_window.try_delete_account.connect(self._handle_delete_account)
         self.storage_window.try_see_storage.connect(self._handle_see_storage)
         self.compose_window.try_compose.connect(self._handle_compose)
+        self.compose_window.try_save.connect(self._handle_save_song)
+        self.compose_window.try_discard.connect(self._handle_discard_song)
 
     @staticmethod
     def load_design() -> str:
@@ -89,6 +90,7 @@ class MainWindow(QMainWindow):
             self.profile_window.set_username(self._username)
             self.outer_stack.setCurrentIndex(1)
             self.auth_window.hide_error()
+            self._handle_see_storage() # so it'd fetch songs immediately
 
         else:  # login_output is a str that contains the error, didn't go through
             self.auth_window.show_error(output)
@@ -99,12 +101,15 @@ class MainWindow(QMainWindow):
         """receives old and new password from signal and handles output"""
         error = client_auth.change_password(old_password, new_password)  # run request and get any error
 
-        if not error:
-            self.profile_window.show_success("Password changed successfully.")
-
-        self.profile_window.show_error(error)
         self.profile_window.new_password_input.clear()
         self.profile_window.confirm_new_password_input.clear()
+
+        if error:
+            self.profile_window.show_error(error)
+
+        else:
+            self.profile_window.show_success("Password changed successfully.")
+            self.profile_window.old_password_input.clear()
 
     def _handle_delete_account(self):
         is_deleted = client_auth.delete_account()  # run request and get bool for if it worked (which is should)
@@ -117,7 +122,7 @@ class MainWindow(QMainWindow):
         list_widget.clear()
 
         song_list = client_songs.see_storage()
-
+        print(song_list)  #TODO: check if the songs pass correctly
         if not song_list:
             return  # nothing to show
 
@@ -132,7 +137,7 @@ class MainWindow(QMainWindow):
 
     def _handle_compose(self, key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
                         verse_bars: int, chorus_bars: int, has_drums: bool, complexity: str):
-        self.compose_window.show_progress()  # switch to progress bar
+        self.compose_window.show_loading()  # show loading text
         self.compose_window.compose_btn.setEnabled(False)
 
         # initialize thread
@@ -156,20 +161,40 @@ class MainWindow(QMainWindow):
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.start()
 
-    def _on_compose_success(self, result):
+    def _on_compose_success(self, song_data):
+        if isinstance(song_data, str):  # error, move to error function
+            self._on_compose_error(song_data)
+            return
+
+        midi_bytes, song_uuid = song_data
+        self.compose_window._midi_bytes = midi_bytes
+        self.compose_window._song_uuid = song_uuid
+        self.compose_window._is_playing = True
+        self.compose_window.stop_btn.setText("Stop")
         self.compose_window.show_playback()
-        self.compose_window.now_playing_label.setText("Song ready!")
-        self.compose_window.compose_btn.setEnabled(True)
-        # add a pass to player
 
     def _on_compose_error(self, error):
         QMessageBox.critical(self, "Compose failed", error)
         self.compose_window.reset()
         self.compose_window.compose_btn.setEnabled(True)
 
+    def _handle_save_song(self, song_uuid: str, song_name: str):
+        error = client_songs.save_song(song_uuid, song_name)
+        if error:
+            QMessageBox.warning(self, "Save failed", error)
+        else:
+            self.compose_window.reset()
+
+    def _handle_discard_song(self, song_uuid: str):
+        error = client_songs.discard_song(song_uuid)
+        if error:
+            QMessageBox.warning(self, "Discard failed", error)
+        else:
+            self.compose_window.reset()
+
     def _handle_logout(self):
         # clear tokens
-        if hasattr(self, "thread") and self.thread.isRunning(): # do not log out while thread is running
+        if hasattr(self, "thread") and self.thread.isRunning():  # do not log out while thread is running
             self.thread.quit()
             self.thread.wait()
 

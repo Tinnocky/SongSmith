@@ -4,8 +4,7 @@ from PySide6.QtWidgets import *
 
 class AuthWindow(QWidget):
     # signals
-    try_login = Signal(bool, str, str)
-    try_register = Signal(bool, str, str)
+    try_auth = Signal(bool, str, str)
 
     def __init__(self):
         super().__init__()
@@ -114,9 +113,9 @@ class AuthWindow(QWidget):
                 return  # exit early
 
         if self.is_login_mode:
-            self.try_login.emit(self.is_login_mode, username, password)
+            self.try_auth.emit(self.is_login_mode, username, password)
         else:
-            self.try_register.emit(self.is_login_mode, username, password)
+            self.try_auth.emit(self.is_login_mode, username, password)
 
     def show_error(self, message: str):
         """show an error message under the fields"""

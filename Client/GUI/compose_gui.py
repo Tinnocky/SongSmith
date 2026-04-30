@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal, QObject, Slot
+from PySide6.QtCore import Qt, Signal, QObject, Slot, QTimer
 from PySide6.QtWidgets import *
 
 from Client import client_songs
@@ -14,9 +14,14 @@ class ComposeWindow(QWidget):
 
     # signals
     try_compose = Signal(str, str, int, str, str, int, int, bool, str)
+    try_save = Signal(str, str)
+    try_discard = Signal(str)
 
     def __init__(self):
         super().__init__()
+        self._is_playing = False
+        self._midi_bytes = None
+        self._song_uuid = None
 
         # create gui objects
         # form fields
@@ -66,10 +71,14 @@ class ComposeWindow(QWidget):
         form.addRow(self.compose_btn)
         form.setVerticalSpacing(25)
 
-        # progress bar (hidden until composing starts)
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setVisible(False)
+        # generation text
+        self.loading_label = QLabel("Generating song")
+        self.loading_label.setVisible(False)
+
+        self._dot_timer = QTimer()  # animated dots ... for loading
+        self._dot_timer.setInterval(500)
+        self._dot_timer.timeout.connect(self._animate_loading)
+        self._dot_count = 0
 
         # playback section (hidden until song is ready)
         self.now_playing_label = QLabel("Song ready!")
@@ -108,53 +117,61 @@ class ComposeWindow(QWidget):
         main_layout = QVBoxLayout(self)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(form_widget)
-        main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.playback_widget)
 
     def _handle_compose(self):
         """placeholder — will trigger compose request and show progress bar"""
-        key = self.key_input.currentText()
-        scale = self.scale_input.currentText()
+        key = self.key_input.currentText().upper()
+        scale = self.scale_input.currentText().upper()
         tempo = self.tempo_input.value()
-        chords_instrument = self.chords_instrument_input.currentText()
-        melody_instrument = self.melody_instrument_input.currentText()
+        chords_instrument = self.chords_instrument_input.currentText().upper()
+        melody_instrument = self.melody_instrument_input.currentText().upper()
 
         verse_bars = int(self.verse_bars_input.currentText())
         chorus_bars = int(self.chorus_bars_input.currentText())
 
         has_drums = self.has_drums_input.isChecked()
-        complexity = self.complexity_input.currentText()
+        complexity = self.complexity_input.currentText().upper()
 
         self.try_compose.emit(key, scale, tempo, chords_instrument, melody_instrument,
                               verse_bars, chorus_bars, has_drums, complexity)
 
     def _handle_stop(self):
-        pass
+        """stop playing a song"""
+        self._is_playing = not self._is_playing
+        self.stop_btn.setText("Play" if not self._is_playing else "Stop")
 
     def _handle_save(self):
-        """placeholder — will ask for song name and save"""
-        pass
+        name, ok = QInputDialog.getText(self, "Save Song", "Enter song name:")
+        if ok and name.strip():
+            self.try_save.emit(self._song_uuid, name.strip())
 
     def _handle_discard(self):
-        """placeholder — will discard the composed song"""
-        pass
+        self.try_discard.emit(self._song_uuid)
+        self.reset()
 
-    def show_progress(self):
-        """switch to generating state"""
+    def show_loading(self):
+        """switch to showing loading text while song is being created"""
         self.compose_btn.setEnabled(False)
-        self.progress_bar.setValue(0)
-        self.progress_bar.setVisible(True)
+        self.loading_label.setVisible(True)
+        self._dot_count = 0
+        self._dot_timer.start()
         self.playback_widget.setVisible(False)
+
+    def _animate_loading(self):
+        """animate 3 dots after the loading_label text while generating a song"""
+        self._dot_count = (self._dot_count + 1) % 4
+        self.loading_label.setText("Generating song" + "." * self._dot_count)
 
     def show_playback(self):
         """switch to playback state after song is ready"""
-        self.progress_bar.setVisible(False)
+        self.loading_label.setVisible(False)
         self.playback_widget.setVisible(True)
         self.compose_btn.setEnabled(True)
 
     def reset(self):
         """return to the default compose form state"""
-        self.progress_bar.setVisible(False)
+        self.loading_label.setVisible(False)
         self.playback_widget.setVisible(False)
         self.compose_btn.setEnabled(True)
 
@@ -180,17 +197,14 @@ class ComposeWorker(QObject):
     @Slot()
     def run(self):
         try:
-            result = client_songs.compose(
-                self.key,
-                self.scale,
-                self.tempo,
-                self.chords_instrument,
-                self.melody_instrument,
-                self.verse_bars,
-                self.chorus_bars,
-                self.has_drums,
-                self.complexity
-            )
-            self.finished.emit(result)
+            song_data = client_songs.compose(self.key, self.scale, self.tempo, self.chords_instrument,
+                                             self.melody_instrument, self.verse_bars, self.chorus_bars, self.has_drums,
+                                             self.complexity)
+            if isinstance(song_data, str):  # error
+                self.error.emit(song_data)
+            else:
+                self.finished.emit(song_data)
+
+
         except Exception as e:
             self.error.emit(str(e))

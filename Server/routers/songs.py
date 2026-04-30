@@ -46,7 +46,7 @@ def compose(request: ComposeRequest, user_data: dict = Depends(get_user_data),
 
 
 class StorageResponse(BaseModel):
-    song_list: list[str] | None
+    song_list: list[dict] | None
 
 
 @router.get("/storage")
