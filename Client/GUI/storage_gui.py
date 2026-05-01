@@ -4,6 +4,10 @@ from PySide6.QtWidgets import *
 
 class StorageWindow(QWidget):
     try_see_storage = Signal()
+    try_play = Signal(str)
+    try_rename = Signal(str)
+    try_extract = Signal(str)
+    try_delete = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -56,39 +60,58 @@ class StorageWindow(QWidget):
         self.extract_btn.setEnabled(enabled)
         self.delete_btn.setEnabled(enabled)
 
+    def _selected_song_name(self) -> str | None:
+        """helper to get the selected song's name, to be used in the handle_X functions below"""
+        items = self.song_list.selectedItems()
+        if not items:
+            return None
+
+        widget = self.song_list.itemWidget(items[0])
+        if isinstance(widget, SongRow):
+            return widget.song_name
+
+        return None
+
     def handle_play(self):
-        """placeholder — will fetch and play selected song"""
-        pass
+        name = self._selected_song_name()
+        if name:
+            self.try_play.emit(name)
 
     def handle_rename(self):
-        """placeholder — will prompt for new name and rename"""
-        pass
+        name = self._selected_song_name()
+        if name:
+            self.try_rename.emit(name)
 
     def handle_extract(self):
-        """placeholder — will download midi file"""
-        pass
+        name = self._selected_song_name()
+        if name:
+            self.try_extract.emit(name)
 
     def handle_delete(self):
-        """placeholder — will delete selected song"""
-        pass
-
+        name = self._selected_song_name()
+        if name:
+            self.try_delete.emit(name)
 
 class SongRow(QWidget):
     """a song in storage"""
 
     def __init__(self, song: dict):
         super().__init__()
+        self.setAutoFillBackground(True)
+        self.setMinimumHeight(60)
+        self.song_name: str = song["name"]
 
         name_label = QLabel(song["name"])
         name_label.setObjectName("song_name_label")
 
         info_label = QLabel(
-            f"{song['key']} {song['scale']} | {song['seconds']}s | {song['complexity']}"
+            f"{song['key']} {song['scale']} | {round(song['seconds'])}s | {song['complexity']}"
         )
         info_label.setObjectName("song_info_label")
         info_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
         layout = QHBoxLayout(self)
+        layout.setContentsMargins(12, 8, 12, 8)
         layout.addWidget(name_label)
         layout.addStretch()
         layout.addWidget(info_label)

@@ -5,18 +5,18 @@ from pathlib import Path
 
 import pretty_midi as pm
 
-from Client.client_utils import run_request, SF2_PATH
+from Client.client_utils import run_request
 from Client.audio import MidiPlayer
 
 
 def _start_playing_song(midi_bytes: bytes):
     """helper, play the provided audio"""
-    midi_object = pm.PrettyMIDI(io.BytesIO(midi_bytes))  # turn bytes to object
-    player = MidiPlayer(SF2_PATH)  # create player instance
+    # midi_object = pm.PrettyMIDI(io.BytesIO(midi_bytes))  # turn bytes to object
+    # player = MidiPlayer(SF2_PATH)  # create player instance
 
-    player.play(midi_object)
-    time.sleep(midi_object.get_end_time() + 1)  # wait until song finishes
-    player.stop()
+    # player.play(midi_object)
+    # time.sleep(midi_object.get_end_time() + 1)  # wait until song finishes
+    # player.stop()
 
 
 def compose(key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
@@ -94,33 +94,6 @@ def play_song(song_name: str) -> str | None:
     return response.json().get("detail", "Something went wrong.")
 
 
-def delete_song(song_name: str) -> str | None:
-    """run the delete_song route. returns any errors."""
-    response = run_request("DELETE", f"/songs/song/{song_name}")
-
-    if response.status_code == Status.NO_CONTENT:
-        return None
-
-    # didn't go through
-    return response.json().get("detail", "Something went wrong.")  # NOT_FOUND
-
-
-def extract_song(song_name: str) -> str | None:
-    """create a new file with the song midi in it. returns any errors"""
-    response = run_request("GET", f"/songs/song/{song_name}")
-
-    if response.status_code == Status.OK:
-        song_name = response.headers["x-song-name"]
-        downloads = Path.home() / "Downloads"
-        file_path = downloads / f"{song_name}.mid"
-        file_path.write_bytes(response.content)
-        print(f"Song saved to {file_path}")
-        return None
-
-    # didn't go through
-    return response.json().get("detail", "Something went wrong.")
-
-
 def rename_song(song_name: str, new_song_name: str) -> str | None:
     """run the rename_song route"""
     response = run_request(
@@ -137,3 +110,30 @@ def rename_song(song_name: str, new_song_name: str) -> str | None:
 
     # didn't go through
     return response.json().get("detail", "Something went wrong.")  # NOT_FOUND or CONFLICT
+
+
+def extract_song(song_name: str) -> str | None:
+    """create a new file with the song midi in it. returns any errors"""
+    response = run_request("GET", f"/songs/song/{song_name}")
+
+    if response.status_code == Status.OK:
+        song_name = response.headers["x-song-name"]
+        downloads = Path.home() / "Downloads"
+        file_path = downloads / f"{song_name}.mid"
+        file_path.write_bytes(response.content)
+        print(f"Song saved to {file_path}")  # test
+        return None
+
+    # didn't go through
+    return response.json().get("detail", "Something went wrong.")
+
+
+def delete_song(song_name: str) -> str | None:
+    """run the delete_song route. returns any errors."""
+    response = run_request("DELETE", f"/songs/song/{song_name}")
+
+    if response.status_code == Status.NO_CONTENT:
+        return None
+
+    # didn't go through
+    return response.json().get("detail", "Something went wrong.")  # NOT_FOUND

@@ -1,7 +1,3 @@
-/* ============================================================
-   PROFILE.QSS
-   ============================================================ */
-
 /* username — large hero text */
 ProfileWindow QLabel#username_label {
     color: #c0caf5;

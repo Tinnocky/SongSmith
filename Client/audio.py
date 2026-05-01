@@ -2,7 +2,7 @@ import ctypes
 import threading
 import time
 
-ctypes.CDLL(r"C:\Program Files\fluidsynth\bin\libfluidsynth-3.dll")
+# ctypes.CDLL(r"C:\Program Files\fluidsynth\bin\libfluidsynth-3.dll")
 
 import fluidsynth
 

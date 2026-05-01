@@ -5,8 +5,8 @@ import httpx
 from httpx import Response
 
 BASE_URL = "http://127.0.0.1:8000"
-SF2_FILENAME = "GeneralUser_GS_v1.471.sf2"
-SF2_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), SF2_FILENAME)
+#SF2_FILENAME = "GeneralUser_GS_v1.471.sf2"
+#SF2_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), SF2_FILENAME)
 client = httpx.Client(base_url=BASE_URL)
 
 access_token: str | None = None  # global tokens

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, QSize
 from PySide6.QtWidgets import *
 
 from Client import client_auth, client_utils, client_songs
@@ -62,6 +62,10 @@ class MainWindow(QMainWindow):
         self.profile_window.try_change_password.connect(self._handle_change_password)
         self.profile_window.try_delete_account.connect(self._handle_delete_account)
         self.storage_window.try_see_storage.connect(self._handle_see_storage)
+        self.storage_window.try_play.connect(self._handle_play)
+        self.storage_window.try_rename.connect(self._handle_rename)
+        self.storage_window.try_extract.connect(self._handle_extract)
+        self.storage_window.try_delete.connect(self._handle_delete)
         self.compose_window.try_compose.connect(self._handle_compose)
         self.compose_window.try_save.connect(self._handle_save_song)
         self.compose_window.try_discard.connect(self._handle_discard_song)
@@ -90,7 +94,7 @@ class MainWindow(QMainWindow):
             self.profile_window.set_username(self._username)
             self.outer_stack.setCurrentIndex(1)
             self.auth_window.hide_error()
-            self._handle_see_storage() # so it'd fetch songs immediately
+            self._handle_see_storage()  # so it'd fetch songs immediately
 
         else:  # login_output is a str that contains the error, didn't go through
             self.auth_window.show_error(output)
@@ -112,8 +116,11 @@ class MainWindow(QMainWindow):
             self.profile_window.old_password_input.clear()
 
     def _handle_delete_account(self):
-        is_deleted = client_auth.delete_account()  # run request and get bool for if it worked (which is should)
+        print("delete account called")
 
+        is_deleted = client_auth.delete_account()
+
+        print(f"is_deleted: {is_deleted}")
         if is_deleted:
             self._handle_logout()
 
@@ -122,7 +129,6 @@ class MainWindow(QMainWindow):
         list_widget.clear()
 
         song_list = client_songs.see_storage()
-        print(song_list)  #TODO: check if the songs pass correctly
         if not song_list:
             return  # nothing to show
 
@@ -130,10 +136,49 @@ class MainWindow(QMainWindow):
             item = QListWidgetItem()
             widget = SongRow(song)
 
-            item.setSizeHint(widget.sizeHint())
+            item.setSizeHint(QSize(0, 60))
 
             list_widget.addItem(item)
             list_widget.setItemWidget(item, widget)
+
+    def _handle_play(self):
+        pass
+
+    def _handle_rename(self, song_name: str):
+        new_name, ok = QInputDialog.getText(self, "Rename Song", "Enter new name:")
+        if not ok or not new_name.strip():
+            return
+
+        error = client_songs.rename_song(song_name, new_name)  # run request and get any errors
+        if error:
+            print(error)  # test
+        else:
+            self._handle_see_storage()
+
+    def _handle_extract(self, song_name: str):
+        error = client_songs.extract_song(song_name)  # run request and get any errors
+
+        if error:
+            QMessageBox.warning(self, "Extract failed", error)
+        else:
+            QMessageBox.information(self, "Extracted", "Song saved to Downloads folder.")
+
+    def _handle_delete(self, song_name: str):
+
+        # confirmation box
+        confirm = QMessageBox(self)
+        confirm.setWindowTitle("Delete Song")
+        confirm.setText(f"Delete '{song_name}'?")
+        confirm.setInformativeText("This cannot be undone.")
+        confirm.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel)
+        confirm.setDefaultButton(QMessageBox.StandardButton.Cancel)
+
+        if confirm.exec() == QMessageBox.StandardButton.Yes:
+            error = client_songs.delete_song(song_name)  # run request and get any errors
+            if error:
+                QMessageBox.warning(self, "Delete failed", error)
+            else:
+                self._handle_see_storage()
 
     def _handle_compose(self, key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
                         verse_bars: int, chorus_bars: int, has_drums: bool, complexity: str):
@@ -141,25 +186,25 @@ class MainWindow(QMainWindow):
         self.compose_window.compose_btn.setEnabled(False)
 
         # initialize thread
-        self.thread = QThread()
+        self.compose_thread = QThread()
         self.worker = ComposeWorker(
             key, scale, tempo,
             chords_instrument, melody_instrument,
             verse_bars, chorus_bars,
             has_drums, complexity
         )
-        self.worker.moveToThread(self.thread)
+        self.worker.moveToThread(self.compose_thread)
 
         # connect and run thread
-        self.thread.started.connect(self.worker.run)
+        self.compose_thread.started.connect(self.worker.run)
         self.worker.finished.connect(self._on_compose_success)
         self.worker.error.connect(self._on_compose_error)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.error.connect(self.thread.quit)
+        self.worker.finished.connect(self.compose_thread.quit)
+        self.worker.error.connect(self.compose_thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.worker.error.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.start()
+        self.compose_thread.finished.connect(self.compose_thread.deleteLater)
+        self.compose_thread.start()
 
     def _on_compose_success(self, song_data):
         if isinstance(song_data, str):  # error, move to error function
@@ -194,9 +239,15 @@ class MainWindow(QMainWindow):
 
     def _handle_logout(self):
         # clear tokens
-        if hasattr(self, "thread") and self.thread.isRunning():  # do not log out while thread is running
-            self.thread.quit()
-            self.thread.wait()
+        if hasattr(self, "compose_thread") and self.compose_thread.isRunning():  # do not log out while thread is running
+            self.compose_thread.quit()
+            self.compose_thread.wait()
+
+        if hasattr(self, "play_thread") and self.play_thread.isRunning():
+            # self.play_worker.stop()
+            # self.play_thread.quit()
+            # self.play_thread.wait()
+            pass
 
         self._username = None
         self._access_token = None
