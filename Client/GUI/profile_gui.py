@@ -131,21 +131,21 @@ class ProfileWindow(QWidget):
         self.confirm_new_password_input.setEchoMode(mode)
 
     def show_error(self, message: str):
-        """show an error message under the change password fields"""
-        self.error_label.setStyleSheet("color: #f7768e;")
+        self.error_label.setProperty("state", "error")
+        self.error_label.style().unpolish(self.error_label)
+        self.error_label.style().polish(self.error_label)
         self.error_label.setText(message)
         self.error_label.setVisible(True)
 
     def show_success(self, message: str):
-        """show a success message under the change password fields"""
-        self.error_label.setStyleSheet("color: #9ece6a;")
+        self.error_label.setProperty("state", "success")
+        self.error_label.style().unpolish(self.error_label)
+        self.error_label.style().polish(self.error_label)
         self.error_label.setText(message)
         self.error_label.setVisible(True)
 
     def hide_error(self):
-        """remove an error message under the change password fields"""
         self.error_label.setVisible(False)
-        self.error_label.setStyleSheet("")
 
     def set_username(self, username: str):
         self.username_label.setText(username)

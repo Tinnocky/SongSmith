@@ -1,12 +1,33 @@
-/* page title */
-StorageWindow QLabel#page_title {
-    font-size: 26px;
-    font-weight: 700;
+/* ── shared action button base ── */
+StorageWindow QPushButton#rename_btn,
+StorageWindow QPushButton#extract_btn {
+    background-color: transparent;
+    border: 1px solid #414868;
     color: #c0caf5;
-    letter-spacing: -0.5px;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-weight: 500;
 }
 
-/* refresh — subtle */
+StorageWindow QPushButton#rename_btn:disabled,
+StorageWindow QPushButton#extract_btn:disabled {
+    color: #565f89;
+    border-color: #24283b;
+}
+
+/* ── rename — purple on hover ── */
+StorageWindow QPushButton#rename_btn:hover {
+    border-color: #bb9af7;
+    color: #bb9af7;
+}
+
+/* ── extract — amber on hover ── */
+StorageWindow QPushButton#extract_btn:hover {
+    border-color: #e0af68;
+    color: #e0af68;
+}
+
+/* ── refresh — subtle ── */
 StorageWindow QPushButton#refresh_btn {
     background-color: transparent;
     border: 1px solid #414868;
@@ -20,10 +41,9 @@ StorageWindow QPushButton#refresh_btn {
 StorageWindow QPushButton#refresh_btn:hover {
     border-color: #7aa2f7;
     color: #7aa2f7;
-    background-color: transparent;
 }
 
-/* play — accent fill */
+/* ── play — accent fill ── */
 StorageWindow QPushButton#play_btn {
     background-color: #7aa2f7;
     color: #1a1b26;
@@ -36,8 +56,6 @@ StorageWindow QPushButton#play_btn {
 
 StorageWindow QPushButton#play_btn:hover {
     background-color: #89b4fa;
-    border: none;
-    color: #1a1b26;
 }
 
 StorageWindow QPushButton#play_btn:disabled {
@@ -46,49 +64,7 @@ StorageWindow QPushButton#play_btn:disabled {
     border: 1px solid #2a2f45;
 }
 
-/* rename — purple tint on hover */
-StorageWindow QPushButton#rename_btn {
-    background-color: transparent;
-    border: 1px solid #414868;
-    color: #c0caf5;
-    border-radius: 8px;
-    padding: 9px 20px;
-    font-weight: 500;
-}
-
-StorageWindow QPushButton#rename_btn:hover {
-    border-color: #bb9af7;
-    color: #bb9af7;
-    background-color: transparent;
-}
-
-StorageWindow QPushButton#rename_btn:disabled {
-    color: #565f89;
-    border-color: #24283b;
-}
-
-/* extract — amber tint on hover */
-StorageWindow QPushButton#extract_btn {
-    background-color: transparent;
-    border: 1px solid #414868;
-    color: #c0caf5;
-    border-radius: 8px;
-    padding: 9px 20px;
-    font-weight: 500;
-}
-
-StorageWindow QPushButton#extract_btn:hover {
-    border-color: #e0af68;
-    color: #e0af68;
-    background-color: transparent;
-}
-
-StorageWindow QPushButton#extract_btn:disabled {
-    color: #565f89;
-    border-color: #24283b;
-}
-
-/* delete — red */
+/* ── delete — red ── */
 StorageWindow QPushButton#delete_btn {
     background-color: transparent;
     border: 1px solid #f7768e;
@@ -101,7 +77,6 @@ StorageWindow QPushButton#delete_btn {
 StorageWindow QPushButton#delete_btn:hover {
     background-color: #f7768e;
     color: #1a1b26;
-    border-color: #f7768e;
 }
 
 StorageWindow QPushButton#delete_btn:disabled {
@@ -110,11 +85,14 @@ StorageWindow QPushButton#delete_btn:disabled {
     background-color: transparent;
 }
 
+/* ── song row labels ── */
 QLabel#song_name_label {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     color: #c0caf5;
 }
 
 QLabel#song_info_label {
     font-size: 12px;
+    color: #565f89;
+}

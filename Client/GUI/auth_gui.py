@@ -47,7 +47,7 @@ class AuthWindow(QWidget):
         self.switch_mode_btn.setObjectName("switch_mode_btn")
         self.reveal_password_btn.setObjectName("reveal_password_btn")
         self.error_label.setObjectName("error_label")
-        self.error_label.setWordWrap(True) # so it'd take full width
+        self.error_label.setWordWrap(True)  # so it'd take full width
 
         # add all rows
         form = QFormLayout()
@@ -113,10 +113,7 @@ class AuthWindow(QWidget):
                 self.confirm_password_input.clear()
                 return  # exit early
 
-        if self._is_login_mode:
-            self.try_auth.emit(self._is_login_mode, username, password)
-        else:
-            self.try_auth.emit(self._is_login_mode, username, password)
+        self.try_auth.emit(self._is_login_mode, username, password)
 
     def show_error(self, message: str):
         """show an error message under the fields"""
@@ -128,6 +125,6 @@ class AuthWindow(QWidget):
         self.error_label.setVisible(False)
 
     def reset(self):
-        self._is_login_mode = False
-        self.toggle_auth_mode() # so it would switch to log in
+        if not self._is_login_mode:
+            self.toggle_auth_mode()  # only switch if not already in login mode
         self.hide_error()

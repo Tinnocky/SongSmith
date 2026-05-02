@@ -1,127 +1,73 @@
-Here's the full updated QSS:
-css/* ============================================================
-   STORAGE.QSS
-   ============================================================ */
-
-/* page title */
-StorageWindow QLabel#page_title {
-    font-size: 26px;
-    font-weight: 700;
-    color: #c0caf5;
-    letter-spacing: -0.5px;
+/* ── form labels ── */
+AuthWindow QLabel {
+    color: #565f89;
+    font-size: 14px;
+    font-weight: 500;
 }
 
-/* refresh — subtle */
-StorageWindow QPushButton#refresh_btn {
-    background-color: transparent;
-    border: 1px solid #414868;
-    color: #565f89;
-    border-radius: 8px;
-    padding: 7px 16px;
+/* ── error label ── */
+AuthWindow QLabel#error_label {
+    color: #f7768e;
     font-size: 13px;
     font-weight: 500;
 }
 
-StorageWindow QPushButton#refresh_btn:hover {
-    border-color: #7aa2f7;
-    color: #7aa2f7;
-    background-color: transparent;
-}
-
-/* play — accent fill */
-StorageWindow QPushButton#play_btn {
+/* ── submit button — accent fill ── */
+AuthWindow QPushButton#submit_btn {
     background-color: #7aa2f7;
     color: #1a1b26;
     border: none;
     border-radius: 8px;
-    padding: 9px 20px;
+    padding: 12px 20px;
     font-weight: 700;
-    font-size: 14px;
-}
-
-StorageWindow QPushButton#play_btn:hover {
-    background-color: #89b4fa;
-    border: none;
-    color: #1a1b26;
-}
-
-StorageWindow QPushButton#play_btn:disabled {
-    background-color: #24283b;
-    color: #565f89;
-    border: 1px solid #2a2f45;
-}
-
-/* rename — purple tint on hover */
-StorageWindow QPushButton#rename_btn {
-    background-color: transparent;
-    border: 1px solid #414868;
-    color: #c0caf5;
-    border-radius: 8px;
-    padding: 9px 20px;
-    font-weight: 500;
-}
-
-StorageWindow QPushButton#rename_btn:hover {
-    border-color: #bb9af7;
-    color: #bb9af7;
-    background-color: transparent;
-}
-
-StorageWindow QPushButton#rename_btn:disabled {
-    color: #565f89;
-    border-color: #24283b;
-}
-
-/* extract — amber tint on hover */
-StorageWindow QPushButton#extract_btn {
-    background-color: transparent;
-    border: 1px solid #414868;
-    color: #c0caf5;
-    border-radius: 8px;
-    padding: 9px 20px;
-    font-weight: 500;
-}
-
-StorageWindow QPushButton#extract_btn:hover {
-    border-color: #e0af68;
-    color: #e0af68;
-    background-color: transparent;
-}
-
-StorageWindow QPushButton#extract_btn:disabled {
-    color: #565f89;
-    border-color: #24283b;
-}
-
-/* delete — red */
-StorageWindow QPushButton#delete_btn {
-    background-color: transparent;
-    border: 1px solid #f7768e;
-    color: #f7768e;
-    border-radius: 8px;
-    padding: 9px 20px;
-    font-weight: 600;
-}
-
-StorageWindow QPushButton#delete_btn:hover {
-    background-color: #f7768e;
-    color: #1a1b26;
-    border-color: #f7768e;
-}
-
-StorageWindow QPushButton#delete_btn:disabled {
-    border-color: #2a2f45;
-    color: #565f89;
-    background-color: transparent;
-}
-
-QLabel#song_name_label {
     font-size: 16px;
-    font-weight: 600;
-    color: #c0caf5;
+    min-height: 24px;
 }
 
-QLabel#song_info_label {
-    font-size: 12px;
+AuthWindow QPushButton#submit_btn:hover {
+    background-color: #89b4fa;
+}
+
+AuthWindow QPushButton#submit_btn:pressed {
+    background-color: #5f8fd6;
+}
+
+/* ── switch mode — link style ── */
+AuthWindow QPushButton#switch_mode_btn {
+    background-color: transparent;
+    border: none;
+    color: #7aa2f7;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 8px 4px;
+}
+
+AuthWindow QPushButton#switch_mode_btn:hover {
+    color: #89b4fa;
+    background-color: transparent;
+    border: none;
+}
+
+/* ── reveal password button ── */
+AuthWindow QPushButton#reveal_password_btn {
+    background-color: transparent;
+    border: 1px solid #414868;
+    border-radius: 8px;
     color: #565f89;
+    padding: 6px 12px;
+    font-size: 13px;
+    min-width: 54px;
+    max-width: 54px;
+    font-weight: 500;
+}
+
+AuthWindow QPushButton#reveal_password_btn:hover {
+    color: #c0caf5;
+    border-color: #565f89;
+    background-color: transparent;
+}
+
+AuthWindow QPushButton#reveal_password_btn:checked {
+    color: #7aa2f7;
+    border-color: #7aa2f7;
 }

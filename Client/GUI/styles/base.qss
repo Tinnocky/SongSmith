@@ -1,3 +1,4 @@
+/* ── global ── */
 QWidget {
     background-color: #1a1b26;
     color: #c0caf5;
@@ -6,39 +7,43 @@ QWidget {
     border: none;
 }
 
-/* ── inputs ── */
-QLineEdit {
-    background-color: #24283b;
+QLabel {
+    background: transparent;
     color: #c0caf5;
-    border: 1px solid #414868;
-    border-radius: 8px;
-    padding: 10px 14px;
-    min-height: 22px;
-    selection-background-color: #364a82;
 }
 
-QLineEdit:focus {
-    border: 2px solid #7aa2f7;
+QStackedWidget,
+QScrollArea {
+    border: none;
+    background: transparent;
 }
 
-QLineEdit:disabled {
-    color: #565f89;
-    border-color: #24283b;
-}
-
-/* ── dropdowns ── */
-QComboBox {
+/* ── inputs ── */
+QLineEdit,
+QComboBox,
+QSpinBox {
     background-color: #24283b;
     color: #c0caf5;
     border: 1px solid #414868;
     border-radius: 8px;
     padding: 8px 14px;
     min-height: 22px;
-    min-width: 140px;
 }
 
-QComboBox:focus {
+QLineEdit {
+    padding: 10px 14px;
+    selection-background-color: #364a82;
+}
+
+QLineEdit:focus,
+QComboBox:focus,
+QSpinBox:focus {
     border: 2px solid #7aa2f7;
+}
+
+QLineEdit:disabled {
+    color: #565f89;
+    border-color: #24283b;
 }
 
 QComboBox:hover {
@@ -69,18 +74,8 @@ QComboBox QAbstractItemView {
     outline: none;
 }
 
-/* ── spinbox ── */
-QSpinBox {
-    background-color: #24283b;
-    color: #c0caf5;
-    border: 1px solid #414868;
-    border-radius: 8px;
-    padding: 8px 14px;
-    min-height: 22px;
-}
-
-QSpinBox:focus {
-    border: 2px solid #7aa2f7;
+QComboBox {
+    min-width: 140px;
 }
 
 QSpinBox::up-button,
@@ -167,7 +162,6 @@ QProgressBar {
     border-radius: 6px;
     min-height: 10px;
     max-height: 10px;
-    text-align: center;
     color: transparent;
 }
 
@@ -231,17 +225,4 @@ QFrame[frameShape="5"] {
     background-color: #2a2f45;
     border: none;
     max-height: 1px;
-}
-
-/* ── labels ── */
-QLabel {
-    background: transparent;
-    color: #c0caf5;
-}
-
-/* ── stacked / scroll ── */
-QStackedWidget,
-QScrollArea {
-    border: none;
-    background: transparent;
 }
