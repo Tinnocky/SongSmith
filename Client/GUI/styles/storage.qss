@@ -9,12 +9,6 @@ StorageWindow QPushButton#extract_btn {
     font-weight: 500;
 }
 
-StorageWindow QPushButton#rename_btn:disabled,
-StorageWindow QPushButton#extract_btn:disabled {
-    color: #565f89;
-    border-color: #24283b;
-}
-
 /* ── rename — purple on hover ── */
 StorageWindow QPushButton#rename_btn:hover {
     border-color: #bb9af7;
@@ -27,7 +21,7 @@ StorageWindow QPushButton#extract_btn:hover {
     color: #e0af68;
 }
 
-/* ── refresh — subtle ── */
+/* ── refresh ── */
 StorageWindow QPushButton#refresh_btn {
     background-color: transparent;
     border: 1px solid #414868;
@@ -43,46 +37,18 @@ StorageWindow QPushButton#refresh_btn:hover {
     color: #7aa2f7;
 }
 
-/* ── play — accent fill ── */
+/* ── play — sizing only, colors from base ── */
 StorageWindow QPushButton#play_btn {
-    background-color: #7aa2f7;
-    color: #1a1b26;
-    border: none;
     border-radius: 8px;
     padding: 9px 20px;
-    font-weight: 700;
     font-size: 14px;
 }
 
-StorageWindow QPushButton#play_btn:hover {
-    background-color: #89b4fa;
-}
-
-StorageWindow QPushButton#play_btn:disabled {
-    background-color: #24283b;
-    color: #565f89;
-    border: 1px solid #2a2f45;
-}
-
-/* ── delete — red ── */
+/* ── delete — sizing only, colors from base ── */
 StorageWindow QPushButton#delete_btn {
-    background-color: transparent;
-    border: 1px solid #f7768e;
-    color: #f7768e;
     border-radius: 8px;
     padding: 9px 20px;
     font-weight: 600;
-}
-
-StorageWindow QPushButton#delete_btn:hover {
-    background-color: #f7768e;
-    color: #1a1b26;
-}
-
-StorageWindow QPushButton#delete_btn:disabled {
-    border-color: #2a2f45;
-    color: #565f89;
-    background-color: transparent;
 }
 
 /* ── song row labels ── */

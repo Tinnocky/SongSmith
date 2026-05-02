@@ -33,7 +33,7 @@ ProfileWindow QLabel#danger_description {
     font-size: 15px;
 }
 
-/* ── shared button base ── */
+/* ── shared button sizing ── */
 ProfileWindow QPushButton#change_password_btn,
 ProfileWindow QPushButton#delete_account_btn {
     border-radius: 8px;
@@ -41,33 +41,38 @@ ProfileWindow QPushButton#delete_account_btn {
     font-size: 15px;
 }
 
-/* ── change password — accent fill ── */
+/* ── change password — sizing only, colors from base ── */
 ProfileWindow QPushButton#change_password_btn {
-    background-color: #7aa2f7;
-    color: #1a1b26;
-    border: none;
     font-weight: 700;
 }
 
-ProfileWindow QPushButton#change_password_btn:hover {
-    background-color: #89b4fa;
-}
-
-ProfileWindow QPushButton#change_password_btn:pressed {
-    background-color: #5f8fd6;
-}
-
-/* ── delete account — red outline ── */
+/* ── delete account — sizing only, colors from base ── */
 ProfileWindow QPushButton#delete_account_btn {
-    background-color: transparent;
-    border: 1px solid #f7768e;
-    color: #f7768e;
     font-weight: 600;
 }
 
-ProfileWindow QPushButton#delete_account_btn:hover {
-    background-color: #f7768e;
-    color: #1a1b26;
+/* ── reveal password button ── */
+ProfileWindow QPushButton#reveal_password_btn {
+    background-color: transparent;
+    border: 1px solid #414868;
+    border-radius: 8px;
+    color: #565f89;
+    padding: 6px 12px;
+    font-size: 13px;
+    min-width: 54px;
+    max-width: 54px;
+    font-weight: 500;
+}
+
+ProfileWindow QPushButton#reveal_password_btn:hover {
+    color: #c0caf5;
+    border-color: #565f89;
+    background-color: transparent;
+}
+
+ProfileWindow QPushButton#reveal_password_btn:checked {
+    color: #7aa2f7;
+    border-color: #7aa2f7;
 }
 
 /* ── error / success label ── */
@@ -77,20 +82,4 @@ QLabel#error_label[state="error"] {
 
 QLabel#error_label[state="success"] {
     color: #9ece6a;
-}
-
-/* ── message boxes ── */
-QMessageBox {
-    background-color: #1a1b26;
-    color: #c0caf5;
-}
-
-QMessageBox QLabel {
-    color: #c0caf5;
-    font-size: 14px;
-}
-
-QMessageBox QPushButton {
-    min-width: 80px;
-    padding: 6px 16px;
 }

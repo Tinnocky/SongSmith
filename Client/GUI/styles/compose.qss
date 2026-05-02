@@ -11,30 +11,12 @@ ComposeWindow QLabel#now_playing_label {
     font-size: 16px;
 }
 
-/* ── compose button — main CTA ── */
+/* ── compose button — sizing only, colors from base ── */
 ComposeWindow QPushButton#compose_btn {
-    background-color: #7aa2f7;
-    color: #1a1b26;
-    border: none;
     border-radius: 8px;
     padding: 13px 32px;
-    font-weight: 700;
     font-size: 16px;
     min-height: 26px;
-}
-
-ComposeWindow QPushButton#compose_btn:hover {
-    background-color: #89b4fa;
-}
-
-ComposeWindow QPushButton#compose_btn:pressed {
-    background-color: #5f8fd6;
-}
-
-ComposeWindow QPushButton#compose_btn:disabled {
-    background-color: #24283b;
-    color: #565f89;
-    border: 1px solid #2a2f45;
 }
 
 /* ── shared playback button base ── */
@@ -47,7 +29,7 @@ ComposeWindow QPushButton#discard_btn {
     font-weight: 600;
 }
 
-/* stop/play — blue */
+/* ── stop/play — blue ── */
 ComposeWindow QPushButton#stop_btn {
     border: 1px solid #7aa2f7;
     color: #7aa2f7;
@@ -58,7 +40,7 @@ ComposeWindow QPushButton#stop_btn:hover {
     color: #1a1b26;
 }
 
-/* save — green */
+/* ── save — green ── */
 ComposeWindow QPushButton#save_btn {
     border: 1px solid #9ece6a;
     color: #9ece6a;
@@ -69,15 +51,10 @@ ComposeWindow QPushButton#save_btn:hover {
     color: #1a1b26;
 }
 
-/* discard — red */
+/* ── discard — sizing only, colors from base ── */
 ComposeWindow QPushButton#discard_btn {
-    border: 1px solid #f7768e;
-    color: #f7768e;
-}
-
-ComposeWindow QPushButton#discard_btn:hover {
-    background-color: #f7768e;
-    color: #1a1b26;
+    border-radius: 8px;
+    padding: 9px 20px;
 }
 
 /* ── playback container ── */

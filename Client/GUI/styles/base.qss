@@ -18,7 +18,7 @@ QScrollArea {
     background: transparent;
 }
 
-/* ── inputs ── */
+/* ── shared input base ── */
 QLineEdit,
 QComboBox,
 QSpinBox {
@@ -44,6 +44,11 @@ QSpinBox:focus {
 QLineEdit:disabled {
     color: #565f89;
     border-color: #24283b;
+}
+
+/* ── combobox ── */
+QComboBox {
+    min-width: 140px;
 }
 
 QComboBox:hover {
@@ -74,10 +79,7 @@ QComboBox QAbstractItemView {
     outline: none;
 }
 
-QComboBox {
-    min-width: 140px;
-}
-
+/* ── spinbox ── */
 QSpinBox::up-button,
 QSpinBox::down-button {
     background-color: #2a2f45;
@@ -129,6 +131,57 @@ QPushButton:disabled {
     color: #565f89;
     border-color: #24283b;
     background-color: #1e2133;
+}
+
+/* ── accent fill button — shared across screens ── */
+QPushButton#submit_btn,
+QPushButton#compose_btn,
+QPushButton#play_btn,
+QPushButton#change_password_btn {
+    background-color: #7aa2f7;
+    color: #1a1b26;
+    border: none;
+    font-weight: 700;
+}
+
+QPushButton#submit_btn:hover,
+QPushButton#compose_btn:hover,
+QPushButton#play_btn:hover,
+QPushButton#change_password_btn:hover {
+    background-color: #89b4fa;
+    color: #1a1b26;
+    border: none;
+}
+
+QPushButton#submit_btn:pressed,
+QPushButton#compose_btn:pressed,
+QPushButton#change_password_btn:pressed {
+    background-color: #5f8fd6;
+    border: none;
+}
+
+QPushButton#compose_btn:disabled,
+QPushButton#play_btn:disabled {
+    background-color: #24283b;
+    color: #565f89;
+    border: 1px solid #2a2f45;
+}
+
+/* ── danger button — shared across screens ── */
+QPushButton#discard_btn,
+QPushButton#delete_btn,
+QPushButton#delete_account_btn {
+    background-color: transparent;
+    border: 1px solid #f7768e;
+    color: #f7768e;
+}
+
+QPushButton#discard_btn:hover,
+QPushButton#delete_btn:hover,
+QPushButton#delete_account_btn:hover {
+    background-color: #f7768e;
+    color: #1a1b26;
+    border-color: #f7768e;
 }
 
 /* ── checkbox ── */
@@ -225,4 +278,20 @@ QFrame[frameShape="5"] {
     background-color: #2a2f45;
     border: none;
     max-height: 1px;
+}
+
+/* ── message boxes ── */
+QMessageBox {
+    background-color: #1a1b26;
+    color: #c0caf5;
+}
+
+QMessageBox QLabel {
+    color: #c0caf5;
+    font-size: 14px;
+}
+
+QMessageBox QPushButton {
+    min-width: 80px;
+    padding: 6px 16px;
 }

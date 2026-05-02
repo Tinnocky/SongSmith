@@ -4,7 +4,7 @@ Sidebar {
     border-right: 2px solid #414868;
 }
 
-/* ── nav buttons — override base QPushButton ── */
+/* ── nav buttons ── */
 Sidebar QPushButton {
     background-color: transparent;
     border: 1px solid #414868;
@@ -41,7 +41,7 @@ Sidebar QPushButton[active=true]:hover {
     color: #89b4fa;
 }
 
-/* ── logout — red ── */
+/* ── logout ── */
 Sidebar QPushButton#logout_btn {
     color: #f7768e;
     border-color: #f7768e;
@@ -50,6 +50,7 @@ Sidebar QPushButton#logout_btn {
 Sidebar QPushButton#logout_btn:hover {
     background-color: #f7768e;
     color: #1a1b26;
+    border-color: #f7768e;
 }
 
 /* ── username label ── */

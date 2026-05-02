@@ -12,24 +12,12 @@ AuthWindow QLabel#error_label {
     font-weight: 500;
 }
 
-/* ── submit button — accent fill ── */
+/* ── submit button — sizing only, colors from base ── */
 AuthWindow QPushButton#submit_btn {
-    background-color: #7aa2f7;
-    color: #1a1b26;
-    border: none;
     border-radius: 8px;
     padding: 12px 20px;
-    font-weight: 700;
     font-size: 16px;
     min-height: 24px;
-}
-
-AuthWindow QPushButton#submit_btn:hover {
-    background-color: #89b4fa;
-}
-
-AuthWindow QPushButton#submit_btn:pressed {
-    background-color: #5f8fd6;
 }
 
 /* ── switch mode — link style ── */
