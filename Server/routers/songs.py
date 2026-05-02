@@ -74,7 +74,7 @@ def get_song(song_name: str, user_data: dict = Depends(get_user_data),
 
 
 class SaveSongRequest(BaseModel):
-    song_name: str = Field(min_length=1, max_length=50, pattern=r"^[\w\s\-]+$")
+    song_name: str = Field(min_length=1, max_length=50, pattern = r"^[^\x00-\x1F\x7F]+$")
 
 
 @router.post("/save/{song_uuid}", status_code=status.HTTP_201_CREATED)
@@ -119,8 +119,8 @@ def delete_song(song_name: str, user_data: dict = Depends(get_user_data),
 
 
 class RenameSongRequest(BaseModel):
-    old_song_name: str = Field(min_length=1, max_length=50, pattern=r"^[\w\s\-]+$")
-    new_song_name: str = Field(min_length=1, max_length=50, pattern=r"^[\w\s\-]+$")
+    old_song_name: str = Field(min_length=1, max_length=50, pattern = r"^[^\x00-\x1F\x7F]+$")
+    new_song_name: str = Field(min_length=1, max_length=50, pattern = r"^[^\x00-\x1F\x7F]+$")
 
 
 @router.patch("/rename/{song_name}", status_code=status.HTTP_204_NO_CONTENT)

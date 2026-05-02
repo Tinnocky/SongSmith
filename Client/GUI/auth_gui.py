@@ -8,7 +8,7 @@ class AuthWindow(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.is_login_mode = True  # starts in login mode
+        self._is_login_mode = True  # starts in login mode
 
         # create gui objects
         self.username_input = QLineEdit()
@@ -47,6 +47,7 @@ class AuthWindow(QWidget):
         self.switch_mode_btn.setObjectName("switch_mode_btn")
         self.reveal_password_btn.setObjectName("reveal_password_btn")
         self.error_label.setObjectName("error_label")
+        self.error_label.setWordWrap(True) # so it'd take full width
 
         # add all rows
         form = QFormLayout()
@@ -68,11 +69,11 @@ class AuthWindow(QWidget):
 
     def toggle_auth_mode(self):
         """switch between login and register modes"""
-        self.is_login_mode = not self.is_login_mode  # switch mode
+        self._is_login_mode = not self._is_login_mode  # switch mode
 
         # not visible in login mode and visible in register mode
-        self.confirm_password_label.setVisible(not self.is_login_mode)
-        self.confirm_password_input.setVisible(not self.is_login_mode)
+        self.confirm_password_label.setVisible(not self._is_login_mode)
+        self.confirm_password_input.setVisible(not self._is_login_mode)
 
         # clear all inputs
         self.username_input.clear()
@@ -81,9 +82,9 @@ class AuthWindow(QWidget):
         self.hide_error()
 
         # change text to fit current mode
-        self.submit_btn.setText("Login" if self.is_login_mode else "Register")
+        self.submit_btn.setText("Login" if self._is_login_mode else "Register")
         self.switch_mode_btn.setText(
-            "Don't have an account? Register" if self.is_login_mode
+            "Don't have an account? Register" if self._is_login_mode
             else "Already have an account? Login"
         )
 
@@ -102,7 +103,7 @@ class AuthWindow(QWidget):
             self.show_error("Please fill in all fields.")
             return  # exit early
 
-        if not self.is_login_mode:  # in register mode we check confirm password too
+        if not self._is_login_mode:  # in register mode we check confirm password too
             if not self.confirm_password_input.text():
                 self.show_error("Please fill in all fields.")
                 return  # exit early
@@ -112,10 +113,10 @@ class AuthWindow(QWidget):
                 self.confirm_password_input.clear()
                 return  # exit early
 
-        if self.is_login_mode:
-            self.try_auth.emit(self.is_login_mode, username, password)
+        if self._is_login_mode:
+            self.try_auth.emit(self._is_login_mode, username, password)
         else:
-            self.try_auth.emit(self.is_login_mode, username, password)
+            self.try_auth.emit(self._is_login_mode, username, password)
 
     def show_error(self, message: str):
         """show an error message under the fields"""
@@ -125,3 +126,8 @@ class AuthWindow(QWidget):
     def hide_error(self):
         """remove an error message under the fields"""
         self.error_label.setVisible(False)
+
+    def reset(self):
+        self._is_login_mode = False
+        self.toggle_auth_mode() # so it would switch to log in
+        self.hide_error()

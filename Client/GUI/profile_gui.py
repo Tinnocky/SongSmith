@@ -37,6 +37,11 @@ class ProfileWindow(QWidget):
         self.confirm_new_password_input.setEchoMode(QLineEdit.EchoMode.Password)
         self.confirm_new_password_input.setPlaceholderText("Confirm new password")
 
+        self.reveal_password_btn = QPushButton("Show")
+        self.reveal_password_btn.setObjectName("reveal_password_btn")
+        self.reveal_password_btn.setCheckable(True)
+        self.reveal_password_btn.toggled.connect(self._toggle_reveal)
+
         self.change_password_btn = QPushButton("Change Password")
         self.change_password_btn.setObjectName("change_password_btn")
         self.change_password_btn.clicked.connect(self._handle_change_password)
@@ -46,11 +51,15 @@ class ProfileWindow(QWidget):
         self.error_label.setObjectName("error_label")
         self.error_label.setVisible(False)
 
+        old_password_row = QHBoxLayout()
+        old_password_row.addWidget(self.old_password_input)
+        old_password_row.addWidget(self.reveal_password_btn)
+
         password_form = QFormLayout()
-        password_form.addRow("Current password", self.old_password_input)
+        password_form.addRow("Current password", old_password_row)
         password_form.addRow("New password", self.new_password_input)
         password_form.addRow("Confirm", self.confirm_new_password_input)
-        password_form.addRow(self.error_label)  # ← error above button
+        password_form.addRow(self.error_label)
         password_form.addRow(self.change_password_btn)
 
         password_separator = QFrame()
@@ -114,6 +123,13 @@ class ProfileWindow(QWidget):
 
         self.try_change_password.emit(old_password, new_password)
 
+    def _toggle_reveal(self, checked: bool):
+        self.reveal_password_btn.setText("Hide" if checked else "Show")
+        mode = QLineEdit.EchoMode.Normal if checked else QLineEdit.EchoMode.Password
+        self.old_password_input.setEchoMode(mode)
+        self.new_password_input.setEchoMode(mode)
+        self.confirm_new_password_input.setEchoMode(mode)
+
     def show_error(self, message: str):
         """show an error message under the change password fields"""
         self.error_label.setStyleSheet("color: #f7768e;")
@@ -133,3 +149,9 @@ class ProfileWindow(QWidget):
 
     def set_username(self, username: str):
         self.username_label.setText(username)
+
+    def reset(self):
+        self.old_password_input.clear()
+        self.new_password_input.clear()
+        self.confirm_new_password_input.clear()
+        self.hide_error()

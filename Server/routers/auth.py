@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status, APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from Server.utils.utils import get_user_manager, validate_strong_password, create_access_token, create_refresh_token, \
     get_user_data, get_refresh_token_data
 
@@ -7,8 +7,8 @@ router = APIRouter(prefix="/auth")
 
 
 class UserRequest(BaseModel):
-    username: str
-    password: str
+    username: str = Field(pattern = r"^[^\x00-\x1F\x7F]+$")
+    password: str = Field(pattern = r"^[^\x00-\x1F\x7F]+$")
 
 
 @router.post("/register", status_code=status.HTTP_204_NO_CONTENT)
@@ -67,8 +67,8 @@ def refresh(user_data: dict = Depends(get_refresh_token_data)) -> RefreshRespons
 
 
 class ChangePasswordRequest(BaseModel):
-    old_password: str
-    new_password: str
+    old_password: str = Field(pattern = r"^[^\x00-\x1F\x7F]+$")
+    new_password: str = Field(pattern = r"^[^\x00-\x1F\x7F]+$")
 
 
 @router.post("/change_password", status_code=status.HTTP_204_NO_CONTENT)

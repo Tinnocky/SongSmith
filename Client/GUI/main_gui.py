@@ -1,11 +1,11 @@
 from pathlib import Path
 
-from PySide6.QtCore import QThread, QSize
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import *
 
 from Client import client_auth, client_utils, client_songs
 from Client.GUI.auth_gui import AuthWindow
-from Client.GUI.compose_gui import ComposeWindow, ComposeWorker
+from Client.GUI.compose_gui import ComposeWindow
 from Client.GUI.profile_gui import ProfileWindow
 from Client.GUI.sidebar_gui import Sidebar
 from Client.GUI.storage_gui import StorageWindow, SongRow
@@ -164,7 +164,6 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, "Extracted", "Song saved to Downloads folder.")
 
     def _handle_delete(self, song_name: str):
-
         # confirmation box
         confirm = QMessageBox(self)
         confirm.setWindowTitle("Delete Song")
@@ -182,29 +181,31 @@ class MainWindow(QMainWindow):
 
     def _handle_compose(self, key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
                         verse_bars: int, chorus_bars: int, has_drums: bool, complexity: str):
-        self.compose_window.show_loading()  # show loading text
         self.compose_window.compose_btn.setEnabled(False)
 
-        # initialize thread
-        self.compose_thread = QThread()
-        self.worker = ComposeWorker(
-            key, scale, tempo,
-            chords_instrument, melody_instrument,
-            verse_bars, chorus_bars,
-            has_drums, complexity
-        )
-        self.worker.moveToThread(self.compose_thread)
+        try:
+            song_data = client_songs.compose(key, scale, tempo, chords_instrument, melody_instrument,
+                verse_bars, chorus_bars, has_drums, complexity)
 
-        # connect and run thread
-        self.compose_thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self._on_compose_success)
-        self.worker.error.connect(self._on_compose_error)
-        self.worker.finished.connect(self.compose_thread.quit)
-        self.worker.error.connect(self.compose_thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.worker.error.connect(self.worker.deleteLater)
-        self.compose_thread.finished.connect(self.compose_thread.deleteLater)
-        self.compose_thread.start()
+            if isinstance(song_data, str):
+                self._on_compose_error(song_data)
+                return
+
+            midi_bytes, song_uuid = song_data
+
+            self.compose_window._midi_bytes = midi_bytes
+            self.compose_window._song_uuid = song_uuid
+            self.compose_window._is_playing = True
+            self.compose_window.stop_btn.setText("Stop")
+
+            self.compose_window.show_playback()
+
+        except Exception as e:
+            self._on_compose_error(str(e))
+
+        finally:
+            self.compose_window.compose_btn.setEnabled(True)
+
 
     def _on_compose_success(self, song_data):
         if isinstance(song_data, str):  # error, move to error function
@@ -239,28 +240,17 @@ class MainWindow(QMainWindow):
 
     def _handle_logout(self):
         # clear tokens
-        if hasattr(self, "compose_thread") and self.compose_thread.isRunning():  # do not log out while thread is running
-            self.compose_thread.quit()
-            self.compose_thread.wait()
-
-        if hasattr(self, "play_thread") and self.play_thread.isRunning():
-            # self.play_worker.stop()
-            # self.play_thread.quit()
-            # self.play_thread.wait()
-            pass
-
         self._username = None
         self._access_token = None
         self._refresh_token = None
         client_utils.set_tokens(None, None)
 
-        # reset auth window
-        self.auth_window.username_input.clear()
-        self.auth_window.password_input.clear()
-        self.auth_window.confirm_password_input.clear()
-        self.auth_window.hide_error()
+        # reset windows
+        self.auth_window.reset()
+        self.compose_window.reset()
+        self.profile_window.reset()
 
         # go back to auth screen
         self.outer_stack.setCurrentIndex(0)
-        if not self.auth_window.is_login_mode:
-            self.auth_window.toggle_auth_mode()
+
+

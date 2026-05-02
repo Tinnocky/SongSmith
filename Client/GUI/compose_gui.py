@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Signal, QObject, Slot, QTimer
+from PySide6.QtCore import Qt, Signal, QObject, Slot
 from PySide6.QtWidgets import *
 
 from Client import client_songs
@@ -71,15 +71,6 @@ class ComposeWindow(QWidget):
         form.addRow(self.compose_btn)
         form.setVerticalSpacing(25)
 
-        # generation text
-        self.loading_label = QLabel("Generating song")
-        self.loading_label.setVisible(False)
-
-        self._dot_timer = QTimer()  # animated dots ... for loading
-        self._dot_timer.setInterval(500)
-        self._dot_timer.timeout.connect(self._animate_loading)
-        self._dot_count = 0
-
         # playback section (hidden until song is ready)
         self.now_playing_label = QLabel("Song ready!")
         self.stop_btn = QPushButton("Stop")
@@ -110,13 +101,13 @@ class ComposeWindow(QWidget):
         self.playback_widget.setObjectName("playback_widget")
 
         # main layout
-        form_widget = QWidget()
-        form_widget.setFixedWidth(560)
-        form_widget.setLayout(form)
+        self.form_widget = QWidget()
+        self.form_widget.setFixedWidth(560)
+        self.form_widget.setLayout(form)
 
         main_layout = QVBoxLayout(self)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(form_widget)
+        main_layout.addWidget(self.form_widget)
         main_layout.addWidget(self.playback_widget)
 
     def _handle_compose(self):
@@ -150,61 +141,14 @@ class ComposeWindow(QWidget):
         self.try_discard.emit(self._song_uuid)
         self.reset()
 
-    def show_loading(self):
-        """switch to showing loading text while song is being created"""
-        self.compose_btn.setEnabled(False)
-        self.loading_label.setVisible(True)
-        self._dot_count = 0
-        self._dot_timer.start()
-        self.playback_widget.setVisible(False)
-
-    def _animate_loading(self):
-        """animate 3 dots after the loading_label text while generating a song"""
-        self._dot_count = (self._dot_count + 1) % 4
-        self.loading_label.setText("Generating song" + "." * self._dot_count)
-
     def show_playback(self):
         """switch to playback state after song is ready"""
-        self.loading_label.setVisible(False)
+        self.form_widget.setVisible(False)  # make parameter inputs invisible
         self.playback_widget.setVisible(True)
         self.compose_btn.setEnabled(True)
 
     def reset(self):
         """return to the default compose form state"""
-        self.loading_label.setVisible(False)
+        self.form_widget.setVisible(True)
         self.playback_widget.setVisible(False)
         self.compose_btn.setEnabled(True)
-
-
-class ComposeWorker(QObject):
-    """a class used to compose in a separate thread than the GUI"""
-    finished = Signal(object)
-    error = Signal(str)
-
-    def __init__(self, key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
-                 verse_bars: int, chorus_bars: int, has_drums: bool, complexity: str):
-        super().__init__()
-        self.key = key
-        self.scale = scale
-        self.tempo = tempo
-        self.chords_instrument = chords_instrument
-        self.melody_instrument = melody_instrument
-        self.verse_bars = verse_bars
-        self.chorus_bars = chorus_bars
-        self.has_drums = has_drums
-        self.complexity = complexity
-
-    @Slot()
-    def run(self):
-        try:
-            song_data = client_songs.compose(self.key, self.scale, self.tempo, self.chords_instrument,
-                                             self.melody_instrument, self.verse_bars, self.chorus_bars, self.has_drums,
-                                             self.complexity)
-            if isinstance(song_data, str):  # error
-                self.error.emit(song_data)
-            else:
-                self.finished.emit(song_data)
-
-
-        except Exception as e:
-            self.error.emit(str(e))
