@@ -1,12 +1,16 @@
+import io
 import os
 from http import HTTPStatus as Status
 
 import httpx
+import pretty_midi as pm
 from httpx import Response
 
+from Client.audio import MidiPlayer
+
 BASE_URL = "http://127.0.0.1:8000"
-#SF2_FILENAME = "GeneralUser_GS_v1.471.sf2"
-#SF2_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), SF2_FILENAME)
+SF2_FILENAME = "GeneralUser_GS_v1.471.sf2"
+SF2_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), SF2_FILENAME)
 client = httpx.Client(base_url=BASE_URL)
 
 access_token: str | None = None  # global tokens
@@ -60,3 +64,18 @@ def refresh_access_token() -> bool:
         return True
 
     return False
+
+
+def start_playing(player: MidiPlayer, midi_bytes: bytes):
+    import mido
+
+    programs = {}
+    mid = mido.MidiFile(file=io.BytesIO(midi_bytes))
+    for track in mid.tracks:
+        for msg in track:
+            if msg.type == 'program_change':
+                programs[msg.channel] = msg.program  # last one wins
+
+    midi_object = pm.PrettyMIDI(io.BytesIO(midi_bytes))
+    player.load(midi_object, programs)
+    player.play()

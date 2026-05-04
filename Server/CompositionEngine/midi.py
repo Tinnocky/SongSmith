@@ -35,6 +35,16 @@ class MidiEngine:
         self.melody_instrument = pm.Instrument(program=INSTRUMENTS_MIDI_CHANNELS[song.instruments["MELODY"]])
         self.midi.instruments.extend([self.chords_instrument, self.melody_instrument])  # append instruments
 
+        # add instruments
+        chords_program = INSTRUMENTS_MIDI_CHANNELS[song.instruments["CHORDS"]]
+        melody_program = INSTRUMENTS_MIDI_CHANNELS[song.instruments["MELODY"]]
+        print(f"chords: {song.instruments['CHORDS']} -> program {chords_program}")
+        print(f"melody: {song.instruments['MELODY']} -> program {melody_program}")
+
+        self.chords_instrument = pm.Instrument(program=chords_program)
+        self.melody_instrument = pm.Instrument(program=melody_program)
+        self.midi.instruments.extend([self.chords_instrument, self.melody_instrument])
+
         # handle drums
         self.drums_instrument: pm.Instrument | None = None
         if not song.drums.is_empty():  # not all songs have drums

@@ -20,7 +20,7 @@ ComposeWindow QPushButton#compose_btn {
 }
 
 /* ── shared playback button base ── */
-ComposeWindow QPushButton#stop_btn,
+ComposeWindow QPushButton#pause_btn,
 ComposeWindow QPushButton#save_btn,
 ComposeWindow QPushButton#discard_btn {
     background-color: transparent;
@@ -29,13 +29,13 @@ ComposeWindow QPushButton#discard_btn {
     font-weight: 600;
 }
 
-/* ── stop/play — blue ── */
-ComposeWindow QPushButton#stop_btn {
+/* ── pause/play — blue ── */
+ComposeWindow QPushButton#pause_btn {
     border: 1px solid #7aa2f7;
     color: #7aa2f7;
 }
 
-ComposeWindow QPushButton#stop_btn:hover {
+ComposeWindow QPushButton#pause_btn:hover {
     background-color: #7aa2f7;
     color: #1a1b26;
 }

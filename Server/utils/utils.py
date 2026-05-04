@@ -118,7 +118,7 @@ async def check_hibp(password: str) -> int:
     except httpx.HTTPError:  # catch the raised error
         return 0  # probably better not to block registration if the api is down as it is not in my control
 
-    # the api gave us a big list with hashes with the same prefix.
+    # the api gave us a big list with hashes with the same   prefix.
     # now we will look for the same suffix = our password
     for line in hash_list.text.splitlines():
         hash_str, breaches_amount = line.split(":")
@@ -167,9 +167,14 @@ def get_midi(rq) -> tuple[bytes, float]:
                       rq.chorus_bars, rq.has_drums, rq.complexity)
     song = Generator(ruleset).generate_song()
 
+
     # turn song to midi and then to bytes
     midi_object = MidiEngine(song)
     midi_data = midi_object.generate_midi()
+
+    for i, inst in enumerate(midi_data.instruments):
+        print(f"server instrument {i}: program={inst.program}, is_drum={inst.is_drum}")
+
     midi_file = io.BytesIO()
     midi_data.write(midi_file)
 

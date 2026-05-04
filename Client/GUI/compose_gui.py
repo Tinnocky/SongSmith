@@ -1,7 +1,5 @@
-from PySide6.QtCore import Qt, Signal, QObject, Slot
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import *
-
-from Client import client_songs
 
 
 class ComposeWindow(QWidget):
@@ -14,14 +12,16 @@ class ComposeWindow(QWidget):
 
     # signals
     try_compose = Signal(str, str, int, str, str, int, int, bool, str)
+    try_pause = Signal()
+    try_loop = Signal()
     try_save = Signal(str, str)
     try_discard = Signal(str)
 
+
     def __init__(self):
         super().__init__()
-        self._is_playing = False
-        self._midi_bytes = None
-        self._song_uuid = None
+        self.midi_bytes = None
+        self.song_uuid = None
 
         # create gui objects
         # form fields
@@ -73,8 +73,15 @@ class ComposeWindow(QWidget):
 
         # playback section (hidden until song is ready)
         self.now_playing_label = QLabel("Song ready!")
-        self.stop_btn = QPushButton("Stop")
-        self.stop_btn.clicked.connect(self._handle_stop)
+        self.pause_btn = QPushButton("Pause")
+        self.pause_btn.clicked.connect(self._handle_pause)
+
+        self.loop_btn = QPushButton("Loop: Off")
+        self.loop_btn.clicked.connect(self._handle_loop)
+
+        controls_row = QHBoxLayout()
+        controls_row.addWidget(self.pause_btn)
+        controls_row.addWidget(self.loop_btn)
 
         self.save_btn = QPushButton("Save Song")
         self.discard_btn = QPushButton("Discard")
@@ -88,13 +95,14 @@ class ComposeWindow(QWidget):
         self.playback_widget = QWidget()
         playback_layout = QVBoxLayout(self.playback_widget)
         playback_layout.addWidget(self.now_playing_label)
-        playback_layout.addWidget(self.stop_btn)
+        playback_layout.addLayout(controls_row)
+
         playback_layout.addLayout(save_discard_row)
         self.playback_widget.setVisible(False)
 
         # add design
         self.compose_btn.setObjectName("compose_btn")
-        self.stop_btn.setObjectName("stop_btn")
+        self.pause_btn.setObjectName("pause_btn")
         self.save_btn.setObjectName("save_btn")
         self.discard_btn.setObjectName("discard_btn")
         self.now_playing_label.setObjectName("now_playing_label")
@@ -127,18 +135,19 @@ class ComposeWindow(QWidget):
         self.try_compose.emit(key, scale, tempo, chords_instrument, melody_instrument,
                               verse_bars, chorus_bars, has_drums, complexity)
 
-    def _handle_stop(self):
-        """stop playing a song"""
-        self._is_playing = not self._is_playing
-        self.stop_btn.setText("Play" if not self._is_playing else "Stop")
+    def _handle_pause(self):
+        self.try_pause.emit()
+
+    def _handle_loop(self):
+        self.try_loop.emit()
 
     def _handle_save(self):
         name, ok = QInputDialog.getText(self, "Save Song", "Enter song name:")
         if ok and name.strip():
-            self.try_save.emit(self._song_uuid, name.strip())
+            self.try_save.emit(self.song_uuid, name.strip())
 
     def _handle_discard(self):
-        self.try_discard.emit(self._song_uuid)
+        self.try_discard.emit(self.song_uuid)
         self.reset()
 
     def show_playback(self):

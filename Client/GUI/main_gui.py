@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, Signal
 from PySide6.QtWidgets import *
 
 from Client import client_auth, client_utils, client_songs
@@ -9,9 +9,14 @@ from Client.GUI.compose_gui import ComposeWindow
 from Client.GUI.profile_gui import ProfileWindow
 from Client.GUI.sidebar_gui import Sidebar
 from Client.GUI.storage_gui import StorageWindow, SongRow
+from Client.audio import MidiPlayer
+from Client.client_utils import SF2_PATH, start_playing
 
 
 class MainWindow(QMainWindow):
+    # signals
+    _song_finished_signal = Signal()
+
     def __init__(self, application: QApplication):
         super().__init__()
         self.app = application
@@ -19,6 +24,8 @@ class MainWindow(QMainWindow):
         self._username = None
         self._access_token = None
         self._refresh_token = None
+        self._song_finished_signal.connect(self._on_song_finished)  # connect this before player
+        self._player = MidiPlayer(SF2_PATH, on_finished=self._song_finished_signal.emit)  # init player
 
         self.setWindowTitle("SongSmith")
         self.resize(900, 600)
@@ -67,6 +74,8 @@ class MainWindow(QMainWindow):
         self.storage_window.try_extract.connect(self._handle_extract)
         self.storage_window.try_delete.connect(self._handle_delete)
         self.compose_window.try_compose.connect(self._handle_compose)
+        self.compose_window.try_pause.connect(self._handle_pause)
+        self.compose_window.try_loop.connect(self._handle_loop)
         self.compose_window.try_save.connect(self._handle_save_song)
         self.compose_window.try_discard.connect(self._handle_discard_song)
 
@@ -116,11 +125,8 @@ class MainWindow(QMainWindow):
             self.profile_window.old_password_input.clear()
 
     def _handle_delete_account(self):
-        print("delete account called")
-
         is_deleted = client_auth.delete_account()
 
-        print(f"is_deleted: {is_deleted}")
         if is_deleted:
             self._handle_logout()
 
@@ -151,7 +157,7 @@ class MainWindow(QMainWindow):
 
         error = client_songs.rename_song(song_name, new_name)  # run request and get any errors
         if error:
-            print(error)  # test
+            QMessageBox.warning(self, "Rename failed", error)
         else:
             self._handle_see_storage()
 
@@ -185,20 +191,21 @@ class MainWindow(QMainWindow):
 
         try:
             song_data = client_songs.compose(key, scale, tempo, chords_instrument, melody_instrument,
-                verse_bars, chorus_bars, has_drums, complexity)
+                                             verse_bars, chorus_bars, has_drums, complexity)
 
             if isinstance(song_data, str):
                 self._on_compose_error(song_data)
                 return
 
             midi_bytes, song_uuid = song_data
+            self.compose_window.midi_bytes = midi_bytes
+            self.compose_window.song_uuid = song_uuid
 
-            self.compose_window._midi_bytes = midi_bytes
-            self.compose_window._song_uuid = song_uuid
-            self.compose_window._is_playing = True
-            self.compose_window.stop_btn.setText("Stop")
-
+            self.compose_window.pause_btn.setText("Pause")
             self.compose_window.show_playback()
+            self.sidebar.setEnabled(False)
+
+            start_playing(self._player, midi_bytes)
 
         except Exception as e:
             self._on_compose_error(str(e))
@@ -206,23 +213,29 @@ class MainWindow(QMainWindow):
         finally:
             self.compose_window.compose_btn.setEnabled(True)
 
-
-    def _on_compose_success(self, song_data):
-        if isinstance(song_data, str):  # error, move to error function
-            self._on_compose_error(song_data)
-            return
-
-        midi_bytes, song_uuid = song_data
-        self.compose_window._midi_bytes = midi_bytes
-        self.compose_window._song_uuid = song_uuid
-        self.compose_window._is_playing = True
-        self.compose_window.stop_btn.setText("Stop")
-        self.compose_window.show_playback()
-
     def _on_compose_error(self, error):
         QMessageBox.critical(self, "Compose failed", error)
         self.compose_window.reset()
         self.compose_window.compose_btn.setEnabled(True)
+
+    def _on_song_finished(self):
+        """return to the starting state after a song has ended"""
+        self.compose_window.pause_btn.setText("Play")
+
+    def _handle_pause(self):
+        """change mode to pause/play"""
+        if not self._player.is_playing:
+            # song finished or never started, play from beginning
+            start_playing(self._player, self.compose_window.midi_bytes)
+            self.compose_window.pause_btn.setText("Pause")
+
+        else:
+            mode = self._player.toggle_pause()  # get text to show too
+            self.compose_window.pause_btn.setText(mode)
+
+    def _handle_loop(self):
+        mode = self._player.toggle_loop()
+        self.compose_window.loop_btn.setText(f"Loop: {mode}")
 
     def _handle_save_song(self, song_uuid: str, song_name: str):
         error = client_songs.save_song(song_uuid, song_name)
@@ -230,6 +243,8 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Save failed", error)
         else:
             self.compose_window.reset()
+            self.sidebar.setEnabled(True)
+            self._player.stop()
 
     def _handle_discard_song(self, song_uuid: str):
         error = client_songs.discard_song(song_uuid)
@@ -237,8 +252,13 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Discard failed", error)
         else:
             self.compose_window.reset()
+            self.sidebar.setEnabled(True)
+            self._player.stop()
 
     def _handle_logout(self):
+        # kill any song currently playing
+        self._player.stop()
+
         # clear tokens
         self._username = None
         self._access_token = None
@@ -246,11 +266,10 @@ class MainWindow(QMainWindow):
         client_utils.set_tokens(None, None)
 
         # reset windows
+        self.sidebar.setEnabled(True)
         self.auth_window.reset()
         self.compose_window.reset()
         self.profile_window.reset()
 
         # go back to auth screen
         self.outer_stack.setCurrentIndex(0)
-
-

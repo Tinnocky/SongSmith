@@ -1,22 +1,7 @@
-import io
-import time
 from http import HTTPStatus as Status
 from pathlib import Path
 
-import pretty_midi as pm
-
 from Client.client_utils import run_request
-from Client.audio import MidiPlayer
-
-
-def _start_playing_song(midi_bytes: bytes):
-    """helper, play the provided audio"""
-    # midi_object = pm.PrettyMIDI(io.BytesIO(midi_bytes))  # turn bytes to object
-    # player = MidiPlayer(SF2_PATH)  # create player instance
-
-    # player.play(midi_object)
-    # time.sleep(midi_object.get_end_time() + 1)  # wait until song finishes
-    # player.stop()
 
 
 def compose(key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
@@ -82,15 +67,13 @@ def see_storage() -> list[dict] | None:
     return song_list  # return song_list even if its empty
 
 
-def play_song(song_name: str) -> str | None:
-    """run the play_song route. returns any errors."""
+def play_song(song_name: str) -> bytes | str:
+    """run the play_song route. returns the song bytes or any errors."""
     response = run_request("GET", f"/songs/song/{song_name}")
 
     if response.status_code == Status.OK:
-        _start_playing_song(response.content)
-        return None
+        return response.content
 
-    # didn't go through
     return response.json().get("detail", "Something went wrong.")
 
 
