@@ -1,6 +1,8 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import *
 
+from Client.GUI.playback_widget import PlaybackWidget
+
 
 class ComposeWindow(QWidget):
     # hardcoded constant properties
@@ -17,13 +19,11 @@ class ComposeWindow(QWidget):
     try_save = Signal(str, str)
     try_discard = Signal(str)
 
-
     def __init__(self):
         super().__init__()
         self.midi_bytes = None
         self.song_uuid = None
 
-        # create gui objects
         # form fields
         self.key_input = QComboBox()
         self.key_input.addItems(self.NOTES)
@@ -52,12 +52,12 @@ class ComposeWindow(QWidget):
 
         self.complexity_input = QComboBox()
         self.complexity_input.addItems(self.COMPLEXITIES)
-        self.complexity_input.setCurrentIndex(1)  # default to Medium
+        self.complexity_input.setCurrentIndex(1)
 
         self.compose_btn = QPushButton("Compose Song")
         self.compose_btn.clicked.connect(self._handle_compose)
 
-        # make form
+        # form
         form = QFormLayout()
         form.addRow("Key", self.key_input)
         form.addRow("Scale", self.scale_input)
@@ -71,17 +71,10 @@ class ComposeWindow(QWidget):
         form.addRow(self.compose_btn)
         form.setVerticalSpacing(25)
 
-        # playback section (hidden until song is ready)
-        self.now_playing_label = QLabel("Song ready!")
-        self.pause_btn = QPushButton("Pause")
-        self.pause_btn.clicked.connect(self._handle_pause)
-
-        self.loop_btn = QPushButton("Loop: Off")
-        self.loop_btn.clicked.connect(self._handle_loop)
-
-        controls_row = QHBoxLayout()
-        controls_row.addWidget(self.pause_btn)
-        controls_row.addWidget(self.loop_btn)
+        # playback section
+        self.playback = PlaybackWidget()
+        self.playback.try_pause.connect(self.try_pause)  # forward up to MainWindow
+        self.playback.try_loop.connect(self.try_loop)
 
         self.save_btn = QPushButton("Save Song")
         self.discard_btn = QPushButton("Discard")
@@ -94,18 +87,14 @@ class ComposeWindow(QWidget):
 
         self.playback_widget = QWidget()
         playback_layout = QVBoxLayout(self.playback_widget)
-        playback_layout.addWidget(self.now_playing_label)
-        playback_layout.addLayout(controls_row)
-
+        playback_layout.addWidget(self.playback)
         playback_layout.addLayout(save_discard_row)
         self.playback_widget.setVisible(False)
 
-        # add design
+        # design
         self.compose_btn.setObjectName("compose_btn")
-        self.pause_btn.setObjectName("pause_btn")
         self.save_btn.setObjectName("save_btn")
         self.discard_btn.setObjectName("discard_btn")
-        self.now_playing_label.setObjectName("now_playing_label")
         self.playback_widget.setObjectName("playback_widget")
 
         # main layout

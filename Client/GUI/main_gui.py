@@ -66,13 +66,19 @@ class MainWindow(QMainWindow):
 
         # connect all signals
         self.auth_window.try_auth.connect(self._handle_auth)
+
         self.profile_window.try_change_password.connect(self._handle_change_password)
         self.profile_window.try_delete_account.connect(self._handle_delete_account)
+
         self.storage_window.try_see_storage.connect(self._handle_see_storage)
         self.storage_window.try_play.connect(self._handle_play)
         self.storage_window.try_rename.connect(self._handle_rename)
         self.storage_window.try_extract.connect(self._handle_extract)
         self.storage_window.try_delete.connect(self._handle_delete)
+        self.storage_window.try_pause.connect(self._handle_pause)
+        self.storage_window.try_loop.connect(self._handle_loop)
+        self.storage_window.try_stop.connect(self._handle_storage_stop)
+
         self.compose_window.try_compose.connect(self._handle_compose)
         self.compose_window.try_pause.connect(self._handle_pause)
         self.compose_window.try_loop.connect(self._handle_loop)
@@ -147,8 +153,19 @@ class MainWindow(QMainWindow):
             list_widget.addItem(item)
             list_widget.setItemWidget(item, widget)
 
-    def _handle_play(self):
-        pass
+    def _handle_play(self, song_name: str):
+        result = client_songs.play_song(song_name)
+        if isinstance(result, str):
+            QMessageBox.warning(self, "Playback failed", result)
+            return
+        start_playing(self._player, result)
+        self.storage_window.show_playback(song_name)
+        self.sidebar.setEnabled(False)
+
+    def _handle_storage_stop(self):
+        self._player.stop()
+        self.storage_window.show_list()
+        self.sidebar.setEnabled(True)
 
     def _handle_rename(self, song_name: str):
         new_name, ok = QInputDialog.getText(self, "Rename Song", "Enter new name:")
@@ -201,7 +218,7 @@ class MainWindow(QMainWindow):
             self.compose_window.midi_bytes = midi_bytes
             self.compose_window.song_uuid = song_uuid
 
-            self.compose_window.pause_btn.setText("Pause")
+            self.compose_window.playback.pause_btn.setText("Pause")
             self.compose_window.show_playback()
             self.sidebar.setEnabled(False)
 
@@ -220,22 +237,29 @@ class MainWindow(QMainWindow):
 
     def _on_song_finished(self):
         """return to the starting state after a song has ended"""
-        self.compose_window.pause_btn.setText("Play")
+        self.compose_window.playback.pause_btn.setText("Play")
+        self.storage_window.playback.pause_btn.setText("Play")
+        self.storage_window.show_list()
+        self.sidebar.setEnabled(True)
 
     def _handle_pause(self):
-        """change mode to pause/play"""
         if not self._player.is_playing:
-            # song finished or never started, play from beginning
-            start_playing(self._player, self.compose_window.midi_bytes)
-            self.compose_window.pause_btn.setText("Pause")
-
+            # determine which window is active
+            if self.inner_stack.currentIndex() == 0:  # compose
+                start_playing(self._player, self.compose_window.midi_bytes)
+                self.compose_window.playback.pause_btn.setText("Pause")
+            else:  # storage — song finished, just reset
+                self.storage_window.show_list()
+                self.sidebar.setEnabled(True)
         else:
-            mode = self._player.toggle_pause()  # get text to show too
-            self.compose_window.pause_btn.setText(mode)
+            mode = self._player.toggle_pause()
+            self.compose_window.playback.pause_btn.setText(mode)
+            self.storage_window.playback.pause_btn.setText(mode)
 
     def _handle_loop(self):
         mode = self._player.toggle_loop()
-        self.compose_window.loop_btn.setText(f"Loop: {mode}")
+        self.compose_window.playback.loop_btn.setText(f"Loop: {mode}")
+        self.storage_window.playback.loop_btn.setText(f"Loop: {mode}")
 
     def _handle_save_song(self, song_uuid: str, song_name: str):
         error = client_songs.save_song(song_uuid, song_name)

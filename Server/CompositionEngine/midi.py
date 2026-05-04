@@ -38,8 +38,7 @@ class MidiEngine:
         # add instruments
         chords_program = INSTRUMENTS_MIDI_CHANNELS[song.instruments["CHORDS"]]
         melody_program = INSTRUMENTS_MIDI_CHANNELS[song.instruments["MELODY"]]
-        print(f"chords: {song.instruments['CHORDS']} -> program {chords_program}")
-        print(f"melody: {song.instruments['MELODY']} -> program {melody_program}")
+
 
         self.chords_instrument = pm.Instrument(program=chords_program)
         self.melody_instrument = pm.Instrument(program=melody_program)

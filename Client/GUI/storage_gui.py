@@ -1,5 +1,6 @@
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import *
+from Client.GUI.playback_widget import PlaybackWidget
 
 
 class StorageWindow(QWidget):
@@ -8,11 +9,14 @@ class StorageWindow(QWidget):
     try_rename = Signal(str)
     try_extract = Signal(str)
     try_delete = Signal(str)
+    try_pause = Signal()
+    try_loop = Signal()
+    try_stop = Signal()
 
     def __init__(self):
         super().__init__()
 
-        # create gui objects
+        # ── list view ──
         self.refresh_btn = QPushButton("Refresh")
         self.refresh_btn.clicked.connect(lambda: self.try_see_storage.emit())
 
@@ -29,7 +33,7 @@ class StorageWindow(QWidget):
         self.extract_btn.clicked.connect(self.handle_extract)
         self.delete_btn.clicked.connect(self.handle_delete)
 
-        self._set_action_buttons_enabled(False)  # all action buttons disabled until a song is selected
+        self._set_action_buttons_enabled(False)
 
         buttons_row = QHBoxLayout()
         buttons_row.addWidget(self.play_btn)
@@ -37,20 +41,52 @@ class StorageWindow(QWidget):
         buttons_row.addWidget(self.extract_btn)
         buttons_row.addWidget(self.delete_btn)
 
-        # add design
+        # design
         self.refresh_btn.setObjectName("refresh_btn")
         self.play_btn.setObjectName("play_btn")
         self.rename_btn.setObjectName("rename_btn")
         self.extract_btn.setObjectName("extract_btn")
         self.delete_btn.setObjectName("delete_btn")
 
+        list_view = QWidget()
+        list_layout = QVBoxLayout(list_view)
+        list_layout.setContentsMargins(0, 0, 0, 0)
+        list_layout.addWidget(self.refresh_btn)
+        list_layout.addWidget(self.song_list)
+        list_layout.addLayout(buttons_row)
+
+        # ── playback view ──
+        self.playback = PlaybackWidget()
+        self.playback.try_pause.connect(self.try_pause)
+        self.playback.try_loop.connect(self.try_loop)
+
+        self.stop_btn = QPushButton("Stop")
+        self.stop_btn.setObjectName("stop_btn")
+        self.stop_btn.clicked.connect(self.try_stop)
+
+        playback_view = QWidget()
+        playback_layout = QVBoxLayout(playback_view)
+        playback_layout.setContentsMargins(0, 0, 0, 0)
+        playback_layout.addWidget(self.playback)
+        playback_layout.addWidget(self.stop_btn)
+
+        # ── stack ──
+        self.stack = QStackedWidget()
+        self.stack.addWidget(list_view)      # index 0
+        self.stack.addWidget(playback_view)  # index 1
+
         layout = QVBoxLayout(self)
-        layout.addWidget(self.refresh_btn)
-        layout.addWidget(self.song_list)
-        layout.addLayout(buttons_row)
+        layout.addWidget(self.stack)
+
+    def show_playback(self, song_name: str):
+        self.playback.now_playing_label.setText(f"Now playing: {song_name}")
+        self.stack.setCurrentIndex(1)
+
+    def show_list(self):
+        self.playback.pause_btn.setText("Pause")  # reset button text
+        self.stack.setCurrentIndex(0)
 
     def _on_selection_changed(self):
-        """enable action buttons only when a song is selected"""
         has_selection = len(self.song_list.selectedItems()) > 0
         self._set_action_buttons_enabled(has_selection)
 
@@ -61,15 +97,12 @@ class StorageWindow(QWidget):
         self.delete_btn.setEnabled(enabled)
 
     def _selected_song_name(self) -> str | None:
-        """helper to get the selected song's name, to be used in the handle_X functions below"""
         items = self.song_list.selectedItems()
         if not items:
             return None
-
         widget = self.song_list.itemWidget(items[0])
         if isinstance(widget, SongRow):
             return widget.song_name
-
         return None
 
     def handle_play(self):
@@ -91,6 +124,7 @@ class StorageWindow(QWidget):
         name = self._selected_song_name()
         if name:
             self.try_delete.emit(name)
+
 
 class SongRow(QWidget):
     """a song in storage"""

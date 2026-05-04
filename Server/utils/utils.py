@@ -172,9 +172,6 @@ def get_midi(rq) -> tuple[bytes, float]:
     midi_object = MidiEngine(song)
     midi_data = midi_object.generate_midi()
 
-    for i, inst in enumerate(midi_data.instruments):
-        print(f"server instrument {i}: program={inst.program}, is_drum={inst.is_drum}")
-
     midi_file = io.BytesIO()
     midi_data.write(midi_file)
 

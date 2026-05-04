@@ -67,15 +67,6 @@ def refresh_access_token() -> bool:
 
 
 def start_playing(player: MidiPlayer, midi_bytes: bytes):
-    import mido
-
-    programs = {}
-    mid = mido.MidiFile(file=io.BytesIO(midi_bytes))
-    for track in mid.tracks:
-        for msg in track:
-            if msg.type == 'program_change':
-                programs[msg.channel] = msg.program  # last one wins
-
     midi_object = pm.PrettyMIDI(io.BytesIO(midi_bytes))
-    player.load(midi_object, programs)
+    player.load(midi_object)
     player.play()

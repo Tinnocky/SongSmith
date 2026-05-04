@@ -2,7 +2,9 @@ import threading
 import time
 
 import pretty_midi as pm
+
 DSOUND = "dsound"
+
 
 class MidiPlayer:
     def __init__(self, soundfont_path: str, on_finished=None):
@@ -10,12 +12,12 @@ class MidiPlayer:
 
         # initialize synthesizer
         self.synth = fluidsynth.Synth()
-        result = self.synth.start(driver=DSOUND)  # windows only
-        print(f"synth start result: {result}")
+        self.synth.start(driver=DSOUND)  # windows only
         self.soundfont_id = self.synth.sfload(soundfont_path)
 
         # initialize state
-        self._notes_list: list = []  # will contain all notes to play
+        self._notes_list: list = []
+        self._instruments: list = []
         self._duration: float = 0.0
         self._current_second: float = 0.0
         self._is_playing: bool = False
@@ -28,7 +30,7 @@ class MidiPlayer:
         self._lock = threading.Lock()
         self._stop_event = threading.Event()
         self._pause_event = threading.Event()  # set = paused
-        self._play_thread = None  # the thread object
+        self._play_thread = None
 
     def __enter__(self):
         return self
@@ -54,47 +56,44 @@ class MidiPlayer:
     def is_paused(self) -> bool:
         return self._pause_event.is_set()
 
-    def load(self, midi: pm.PrettyMIDI, programs: dict = None):
-        """load the notes_list and prepare the instruments"""
-        self._programs = programs or {}  # ← add this
+    def load(self, midi: pm.PrettyMIDI):
+        """load the notes list and store instruments for setup later"""
         self._duration = midi.get_end_time()
+        self._instruments = midi.instruments  # store for _start_thread
         notes = []
 
         for i, inst in enumerate(midi.instruments):
             channel = 9 if inst.is_drum else i
-            print(
-                f"instrument {i}: name={inst.name}, program={inst.program}, is_drum={inst.is_drum}, channel={channel}")
             for note in inst.notes:
-                notes.append((note.start, "ON", note.pitch, note.velocity, channel))
-                notes.append((note.end, "OFF", note.pitch, 0, channel))
+                notes.append((note.start, "ON",  note.pitch, note.velocity, channel))
+                notes.append((note.end,   "OFF", note.pitch, 0,             channel))
 
         self._notes_list = sorted(notes)  # sort by starting time
-        self._setup_channels(midi.instruments)
 
     def _setup_channels(self, instruments):
         """set up instruments on fluidsynth channels"""
         self.synth.system_reset()
 
-        for i in range(16):
+        for i in range(16):  # all 16 available channels
             self.synth.cc(i, 7, 0)
             self.synth.program_select(i, self.soundfont_id, 0, 0)
 
         for i, inst in enumerate(instruments):
-            channel = 9 if inst.is_drum else i
-            program = self._programs.get(channel, inst.program)  # ← get correct program
-            result = self.synth.program_select(channel, self.soundfont_id, 128 if inst.is_drum else 0, program)
-            print(f"program_select channel={channel} program={program} result={result}")
+            channel = 9 if inst.is_drum else i  # channel 9 is for drums
+            program = inst.program
+            self.synth.program_select(channel, self.soundfont_id, 128 if inst.is_drum else 0, program)
 
-            self.synth.cc(channel, 7, 127)
-            self.synth.cc(channel, 91, 40 if inst.is_drum else 60)
-            self.synth.cc(channel, 93, 0 if inst.is_drum else 50)
+            # enhance the sounds a bit
+            self.synth.cc(channel, 7, 127)   # volume
+            self.synth.cc(channel, 91, 40 if inst.is_drum else 60)  # reverb
+            self.synth.cc(channel, 93, 0 if inst.is_drum else 50)   # chorus
 
     def play(self):
         """start playing from the beginning"""
-        if not self._notes_list:  # nothing to play
+        if not self._notes_list:
             return
 
-        self.stop()
+        self.stop()  # stop anything playing, resets position to 0
         with self._lock:
             self._current_second = 0.0
 
@@ -103,6 +102,7 @@ class MidiPlayer:
     def _resume(self):
         """resume from paused position"""
         if self._is_playing and self._pause_event.is_set():
+            self._setup_channels(self._instruments)  # restore programs after system_reset
             self._pause_event.clear()
 
     def _pause(self):
@@ -112,7 +112,7 @@ class MidiPlayer:
             self.synth.system_reset()  # silence hanging notes
 
     def toggle_pause(self) -> str:
-        """toggle between paused and playing. returns a string of what needs to be shown"""
+        """toggle between paused and playing. returns what the button should show"""
         if self._pause_event.is_set():
             self._resume()
             return "Pause"
@@ -145,6 +145,7 @@ class MidiPlayer:
         self._stop_event.clear()
         self._pause_event.clear()
         self._is_playing = True
+        self._setup_channels(self._instruments)  # setup AFTER stop() wiped everything
         self._play_thread = threading.Thread(target=self._run, daemon=True)
         self._play_thread.start()
 
