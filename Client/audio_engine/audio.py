@@ -65,8 +65,8 @@ class MidiPlayer:
         for i, inst in enumerate(midi.instruments):
             channel = 9 if inst.is_drum else i
             for note in inst.notes:
-                notes.append((note.start, "ON",  note.pitch, note.velocity, channel))
-                notes.append((note.end,   "OFF", note.pitch, 0,             channel))
+                notes.append((note.start, "ON", note.pitch, note.velocity, channel))
+                notes.append((note.end, "OFF", note.pitch, 0, channel))
 
         self._notes_list = sorted(notes)  # sort by starting time
 
@@ -84,9 +84,9 @@ class MidiPlayer:
             self.synth.program_select(channel, self.soundfont_id, 128 if inst.is_drum else 0, program)
 
             # enhance the sounds a bit
-            self.synth.cc(channel, 7, 127)   # volume
+            self.synth.cc(channel, 7, 127)  # volume
             self.synth.cc(channel, 91, 40 if inst.is_drum else 60)  # reverb
-            self.synth.cc(channel, 93, 0 if inst.is_drum else 50)   # chorus
+            self.synth.cc(channel, 93, 0 if inst.is_drum else 50)  # chorus
 
     def play(self):
         """start playing from the beginning"""

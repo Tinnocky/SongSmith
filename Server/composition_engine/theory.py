@@ -1,7 +1,7 @@
 from functools import cached_property
 
-from Server.utils.composition_utils import SCALES, SCALE_NAMES, NOTES, VERSE_CHORUS_BARS, INSTRUMENTS, COMPLEXITIES, \
-    BEATS_PER_BAR
+from Server.composition_engine.utils import SCALES, SCALE_NAMES, NOTES, VERSE_CHORUS_BARS, INSTRUMENTS, \
+    COMPLEXITIES, BEATS_PER_BAR
 
 
 class Ruleset:
@@ -163,8 +163,3 @@ class Ruleset:
             raise ValueError(f"Invalid chord_index: {chord_index}. Indexes are 1-indexed and range from 1-7.")
 
         return self._scale_data["ALLOWED_NEXT"][chord_index - 1]  # -1 because its 0-indexed
-
-
-# test
-if __name__ == "__main__":
-    pass  # it works

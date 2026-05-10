@@ -20,7 +20,7 @@ SCALES = {
 
         "ALLOWED_NEXT": [
             [1, 2, 4, 5, 6],  # I   → I ii IV V vi
-            [5, 7]  ,  # ii  → V vii°
+            [5, 7],  # ii  → V vii°
             [4, 6],  # iii → IV vi
             [1, 2, 5, 7],  # IV  → I ii V vii°
             [1, 6],  # V   → I vi
@@ -104,8 +104,8 @@ SONG_PARTS = ["INTRO", "VERSE", "BRIDGE", "CHORUS", "ENDING"]
 PATTERNS = ["SUSTAINED 1", "SUSTAINED 2", "SUSTAINED 4", "ARPEGGIO UP", "ARPEGGIO DOWN",
             "OFFBEAT", "WALTZ-LIKE", "STRIDE"]
 OCTAVES = [3, 4, 5, 6]
-ARPEGGIO_OCTAVES = [2, 3, 4, 5] # these are a little lower
-CHORD_OCTAVES = { # arpeggio octaves aren't here as they're assigned differently
+ARPEGGIO_OCTAVES = [2, 3, 4, 5]  # these are a little lower
+CHORD_OCTAVES = {  # arpeggio octaves aren't here as they're assigned differently
     "SUSTAINED": [3, 3, 3],  # root -> 3rd -> 5th
     "OFFBEAT": [3, 3, 3],  # root -> 3rd -> 5th
     "WALTZ-LIKE": [3, 3, 3],  # root -> 3rd -> 5th

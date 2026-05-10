@@ -124,6 +124,7 @@ class ProfileWindow(QWidget):
         self.try_change_password.emit(old_password, new_password)
 
     def _toggle_reveal(self, checked: bool):
+        """toggles visibility of all password fields and updates button text"""
         self.reveal_password_btn.setText("Hide" if checked else "Show")
         mode = QLineEdit.EchoMode.Normal if checked else QLineEdit.EchoMode.Password
         self.old_password_input.setEchoMode(mode)
@@ -131,6 +132,7 @@ class ProfileWindow(QWidget):
         self.confirm_new_password_input.setEchoMode(mode)
 
     def show_error(self, message: str):
+        """shows an error message in red under the change password form"""
         self.error_label.setProperty("state", "error")
         self.error_label.style().unpolish(self.error_label)
         self.error_label.style().polish(self.error_label)
@@ -138,6 +140,7 @@ class ProfileWindow(QWidget):
         self.error_label.setVisible(True)
 
     def show_success(self, message: str):
+        """shows a success message in green under the change password form"""
         self.error_label.setProperty("state", "success")
         self.error_label.style().unpolish(self.error_label)
         self.error_label.style().polish(self.error_label)
@@ -145,12 +148,15 @@ class ProfileWindow(QWidget):
         self.error_label.setVisible(True)
 
     def hide_error(self):
+        """hides the error/success label"""
         self.error_label.setVisible(False)
 
     def set_username(self, username: str):
+        """updates the username label at the top of the screen"""
         self.username_label.setText(username)
 
     def reset(self):
+        """clears all password fields and hides any error message"""
         self.old_password_input.clear()
         self.new_password_input.clear()
         self.confirm_new_password_input.clear()

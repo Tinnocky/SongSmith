@@ -1,9 +1,11 @@
 from http import HTTPStatus as Status
 
-from Client.client_utils import run_request
+from Client.api.utils import run_request
 
 
 def register(username: str, password: str) -> dict[str, str] | str:
+    """run the register request. on success run and return output from the login function below,
+    on failure return an error string"""
     response = run_request(
         "POST",
         "/auth/register",
@@ -21,6 +23,8 @@ def register(username: str, password: str) -> dict[str, str] | str:
 
 
 def login(username: str, password: str) -> dict[str, str] | str:
+    """run the login request and on success, return a dictionary with username and access token
+     and refresh token data. on failure, return an error string."""
     response = run_request(
         "POST",
         "/auth/login",
@@ -39,6 +43,7 @@ def login(username: str, password: str) -> dict[str, str] | str:
 
 
 def change_password(old_password: str, new_password: str) -> str | None:
+    """run the change_password request and on success return None. on failure, return an error string."""
     response = run_request(
         "POST",
         "/auth/change_password",
@@ -49,7 +54,7 @@ def change_password(old_password: str, new_password: str) -> str | None:
     )
 
     if response.status_code == Status.NO_CONTENT:  # ok
-        return None # success
+        return None  # success
 
     return response.json().get("detail", "Something went wrong.")  # didn't go through
 

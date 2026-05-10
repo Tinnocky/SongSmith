@@ -1,12 +1,13 @@
 from http import HTTPStatus as Status
 from pathlib import Path
+from urllib.parse import quote
 
-from Client.client_utils import run_request
+from Client.api.utils import run_request
 
 
 def compose(key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
             verse_bars: int, chorus_bars: int, has_drums: bool, complexity: str) -> tuple[bytes, str] | str:
-    """make compose request. returns a tuple with midi_bytes, song_uuid on success, error string on failure."""
+    """run the compose request. returns a tuple with midi_bytes, song_uuid on success, error string on failure."""
     response = run_request(
         "POST",
         "/songs/compose",
@@ -31,7 +32,7 @@ def compose(key: str, scale: str, tempo: int, chords_instrument: str, melody_ins
 
 
 def save_song(song_uuid: str, song_name: str) -> str | None:
-    """saves song to user's DB, returns any errors."""
+    """run the save request. saves song to user's DB, returns any errors."""
     response = run_request(
         "POST",
         f"/songs/save/{song_uuid}",
@@ -45,7 +46,7 @@ def save_song(song_uuid: str, song_name: str) -> str | None:
 
 
 def discard_song(song_uuid: str) -> str | None:
-    """discards song from the cache, returns any errors."""
+    """run the discard request. discards song from the cache, returns any errors."""
     response = run_request(
         "DELETE",
         f"/songs/compose/{song_uuid}"
@@ -58,6 +59,7 @@ def discard_song(song_uuid: str) -> str | None:
 
 
 def see_storage() -> list[dict] | None:
+    """run the save song request. return the fetched song_list even if its empty, or return None or failure."""
     response = run_request("GET", "/songs/storage")
 
     if response.status_code != Status.OK:
@@ -68,8 +70,8 @@ def see_storage() -> list[dict] | None:
 
 
 def play_song(song_name: str) -> bytes | str:
-    """run the play_song route. returns the song bytes or any errors."""
-    response = run_request("GET", f"/songs/song/{song_name}")
+    """run the play_song request. returns the song bytes or any errors."""
+    response = run_request("GET", f"/songs/song/{quote(song_name)}")
 
     if response.status_code == Status.OK:
         return response.content
@@ -78,10 +80,10 @@ def play_song(song_name: str) -> bytes | str:
 
 
 def rename_song(song_name: str, new_song_name: str) -> str | None:
-    """run the rename_song route"""
+    """run the rename_song request. on success, return None. on failure return an error string"""
     response = run_request(
         "PATCH",
-        f"/songs/rename/{song_name}",
+        f"/songs/rename/{quote(song_name)}",
         json={
             "old_song_name": song_name,
             "new_song_name": new_song_name
@@ -97,7 +99,7 @@ def rename_song(song_name: str, new_song_name: str) -> str | None:
 
 def extract_song(song_name: str) -> str | None:
     """create a new file with the song midi in it. returns any errors"""
-    response = run_request("GET", f"/songs/song/{song_name}")
+    response = run_request("GET", f"/songs/song/{quote(song_name)}")  # get bytes to download
 
     if response.status_code == Status.OK:
         song_name = response.headers["x-song-name"]
@@ -113,7 +115,7 @@ def extract_song(song_name: str) -> str | None:
 
 def delete_song(song_name: str) -> str | None:
     """run the delete_song route. returns any errors."""
-    response = run_request("DELETE", f"/songs/song/{song_name}")
+    response = run_request("DELETE", f"/songs/song/{quote(song_name)}")
 
     if response.status_code == Status.NO_CONTENT:
         return None

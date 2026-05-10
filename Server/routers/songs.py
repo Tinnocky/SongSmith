@@ -5,7 +5,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from sqlalchemy.exc import IntegrityError
 
-from Server.utils.utils import get_midi, get_user_data, get_song_manager, get_song_cache
+from Server.routers.utils import get_midi, get_user_data, get_song_manager, get_song_cache
 
 router = APIRouter(prefix="/songs")
 
@@ -55,7 +55,7 @@ def storage(user_data: dict = Depends(get_user_data),
     """send the songs that are stored in the database under the users name"""
     song_list = songs_table.list_songs(user_data["user_id"])
 
-    return StorageResponse(song_list=song_list) # doesn't matter if its empty
+    return StorageResponse(song_list=song_list)  # doesn't matter if its empty
 
 
 @router.get("/song/{song_name}")
@@ -74,7 +74,7 @@ def get_song(song_name: str, user_data: dict = Depends(get_user_data),
 
 
 class SaveSongRequest(BaseModel):
-    song_name: str = Field(min_length=1, max_length=50, pattern = r"^[^\x00-\x1F\x7F]+$")
+    song_name: str = Field(min_length=1, max_length=50, pattern=r"^[^\x00-\x1F\x7F]+$")
 
 
 @router.post("/save/{song_uuid}", status_code=status.HTTP_201_CREATED)
@@ -119,8 +119,8 @@ def delete_song(song_name: str, user_data: dict = Depends(get_user_data),
 
 
 class RenameSongRequest(BaseModel):
-    old_song_name: str = Field(min_length=1, max_length=50, pattern = r"^[^\x00-\x1F\x7F]+$")
-    new_song_name: str = Field(min_length=1, max_length=50, pattern = r"^[^\x00-\x1F\x7F]+$")
+    old_song_name: str = Field(min_length=1, max_length=50, pattern=r"^[^\x00-\x1F\x7F]+$")
+    new_song_name: str = Field(min_length=1, max_length=50, pattern=r"^[^\x00-\x1F\x7F]+$")
 
 
 @router.patch("/rename/{song_name}", status_code=status.HTTP_204_NO_CONTENT)

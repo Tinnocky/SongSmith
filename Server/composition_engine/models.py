@@ -1,7 +1,7 @@
 from functools import cached_property
 
-from Server.utils.composition_utils import DRUM_MAIN_PATTERNS, DRUM_BRIDGE_PATTERNS, SONG_PARTS, BEATS_PER_BAR
-from Server.utils.composition_utils import NOTES, NOTE_BEATS, NOTE_VELOCITIES, PATTERNS
+from Server.composition_engine.utils import DRUM_MAIN_PATTERNS, DRUM_BRIDGE_PATTERNS, SONG_PARTS, BEATS_PER_BAR, \
+    NOTES, NOTE_BEATS, NOTE_VELOCITIES, PATTERNS
 
 
 class Note:
@@ -59,7 +59,6 @@ class Note:
             raise ValueError
 
         self._degree = degree
-
 
     @property
     def beats(self) -> float | None:
@@ -168,7 +167,7 @@ class Song:
             raise ValueError(f"Invalid instruments: {instruments}. Have to have 2 instruments CHORDS, MELODY.")
         self._instruments = instruments
 
-        if not beats or list(beats.keys()) != SONG_PARTS: # INTRO: , VERSE: , BRIDGE: , CHORUS: , ENDING:
+        if not beats or list(beats.keys()) != SONG_PARTS:  # INTRO: , VERSE: , BRIDGE: , CHORUS: , ENDING:
             raise ValueError(f"Invalid beats: {beats}. Have to have 5 parts INTRO, VERSE, BRIDGE, CHORUS, ENDING.")
         self._beats = beats
 

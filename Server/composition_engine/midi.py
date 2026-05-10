@@ -2,8 +2,8 @@ from functools import cached_property
 
 import pretty_midi as pm
 
-from Server.CompositionEngine.models import Chord, Song
-from Server.utils.composition_utils import INSTRUMENTS_MIDI_CHANNELS, OCTAVES, CHORD_OCTAVES, MIDI_DRUM_PITCHES, \
+from Server.composition_engine.models import Chord, Song
+from Server.composition_engine.utils import INSTRUMENTS_MIDI_CHANNELS, OCTAVES, CHORD_OCTAVES, MIDI_DRUM_PITCHES, \
     DRUM_VELOCITIES, SONG_PARTS, BEATS_PER_BAR, DRUM_TO_PATTERN_MAP, ARPEGGIO_OCTAVES
 
 
@@ -12,6 +12,7 @@ class Timeline:
         self.current = 0.0
 
     def advance(self, seconds: float) -> tuple[float, float]:
+        """advances the timeline by the given seconds and returns (start, end) of the advance"""
         start = self.current
         self.current += seconds
         return start, self.current
@@ -31,14 +32,8 @@ class MidiEngine:
         self.midi = pm.PrettyMIDI(initial_tempo=song.tempo)  # create midi object
 
         # add instruments
-        self.chords_instrument = pm.Instrument(program=INSTRUMENTS_MIDI_CHANNELS[song.instruments["CHORDS"]])
-        self.melody_instrument = pm.Instrument(program=INSTRUMENTS_MIDI_CHANNELS[song.instruments["MELODY"]])
-        self.midi.instruments.extend([self.chords_instrument, self.melody_instrument])  # append instruments
-
-        # add instruments
         chords_program = INSTRUMENTS_MIDI_CHANNELS[song.instruments["CHORDS"]]
         melody_program = INSTRUMENTS_MIDI_CHANNELS[song.instruments["MELODY"]]
-
 
         self.chords_instrument = pm.Instrument(program=chords_program)
         self.melody_instrument = pm.Instrument(program=melody_program)
@@ -92,9 +87,9 @@ class MidiEngine:
         elif "STRIDE" in pattern:
             self._add_stride_chord(chord)
 
-    # ------------------------------------------------------------------ #
-    #  CHORD PATTERNS                                                    #
-    # ------------------------------------------------------------------ #
+    # --------------
+    # CHORD PATTERNS
+    # --------------
 
     def _add_sustained_chord(self, chord: Chord, repeats: int):
         """add all the notes of a sustained chord to the midi.
@@ -225,9 +220,9 @@ class MidiEngine:
 
         return last_midi_pitch
 
-    # ------------------------------------------------------------------ #
-    #  DRUMS                                                             #
-    # ------------------------------------------------------------------ #
+    # -----
+    # DRUMS
+    # -----
 
     def _add_drums(self, part_name: str):
         """redirect the drums to its _add_X_drums function where it'll be added. X = pattern name"""
@@ -261,6 +256,7 @@ class MidiEngine:
                 self.drums_time.advance(self._beats_to_seconds(1))
 
     def _add_drums_note(self, drum: str):
+        """creates a single drum note and adds it to the drums instrument"""
         velocity = DRUM_VELOCITIES[drum]
         pitch = MIDI_DRUM_PITCHES[drum]
 

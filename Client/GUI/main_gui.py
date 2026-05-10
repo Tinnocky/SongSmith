@@ -3,14 +3,14 @@ from pathlib import Path
 from PySide6.QtCore import QSize, Signal
 from PySide6.QtWidgets import *
 
-from Client import client_auth, client_utils, client_songs
-from Client.GUI.auth_gui import AuthWindow
-from Client.GUI.compose_gui import ComposeWindow
-from Client.GUI.profile_gui import ProfileWindow
-from Client.GUI.sidebar_gui import Sidebar
-from Client.GUI.storage_gui import StorageWindow, SongRow
-from Client.audio import MidiPlayer
-from Client.client_utils import SF2_PATH, start_playing
+from Client.api import auth, songs, utils
+from Client.api.utils import SF2_PATH, start_playing
+from Client.audio_engine.audio import MidiPlayer
+from Client.gui.auth_gui import AuthWindow
+from Client.gui.compose_gui import ComposeWindow
+from Client.gui.profile_gui import ProfileWindow
+from Client.gui.sidebar_gui import Sidebar
+from Client.gui.storage_gui import StorageWindow, SongRow
 
 
 class MainWindow(QMainWindow):
@@ -93,18 +93,18 @@ class MainWindow(QMainWindow):
         return "".join((styles_dir / f).read_text() for f in files)
 
     def _handle_auth(self, is_login_mode: bool, username: str, password: str):
-        """receives username from auth signal, runs request and handles output"""
+        """receives username from auth signal, runs login/register api function and handles output"""
         if is_login_mode:
-            output = client_auth.login(username, password)
+            output = auth.login(username, password)
         else:  # register mode
-            output = client_auth.register(username, password)
+            output = auth.register(username, password)
 
         if isinstance(output, dict):  # got an okay
             # set all stuff
             self._username = output["username"]
             self._access_token = output["access_token"]
             self._refresh_token = output["refresh_token"]
-            client_utils.set_tokens(self._access_token, self._refresh_token)  # for responses and such
+            utils.set_tokens(self._access_token, self._refresh_token)  # for responses and such
             self.sidebar.set_username(self._username)
             self.profile_window.set_username(self._username)
             self.outer_stack.setCurrentIndex(1)
@@ -117,8 +117,9 @@ class MainWindow(QMainWindow):
             self.auth_window.confirm_password_input.clear()
 
     def _handle_change_password(self, old_password: str, new_password: str):
-        """receives old and new password from signal and handles output"""
-        error = client_auth.change_password(old_password, new_password)  # run request and get any error
+        """receives old and new password from signal, runs change_password api
+        function and handles output"""
+        error = auth.change_password(old_password, new_password)  # run request and get any error
 
         self.profile_window.new_password_input.clear()
         self.profile_window.confirm_new_password_input.clear()
@@ -131,16 +132,18 @@ class MainWindow(QMainWindow):
             self.profile_window.old_password_input.clear()
 
     def _handle_delete_account(self):
-        is_deleted = client_auth.delete_account()
+        """runs delete_account api function and logout if worked"""
+        is_deleted = auth.delete_account()
 
         if is_deleted:
             self._handle_logout()
 
     def _handle_see_storage(self):
+        """runs see_storage api function and handles output"""
         list_widget = self.storage_window.song_list
         list_widget.clear()
 
-        song_list = client_songs.see_storage()
+        song_list = songs.see_storage()
         if not song_list:
             return  # nothing to show
 
@@ -154,7 +157,8 @@ class MainWindow(QMainWindow):
             list_widget.setItemWidget(item, widget)
 
     def _handle_play(self, song_name: str):
-        result = client_songs.play_song(song_name)
+        """fetches midi bytes for the selected song and starts playback"""
+        result = songs.play_song(song_name)
         if isinstance(result, str):
             QMessageBox.warning(self, "Playback failed", result)
             return
@@ -163,23 +167,26 @@ class MainWindow(QMainWindow):
         self.sidebar.setEnabled(False)
 
     def _handle_storage_stop(self):
+        """stops playback and returns storage to the song list"""
         self._player.stop()
         self.storage_window.show_list()
         self.sidebar.setEnabled(True)
 
     def _handle_rename(self, song_name: str):
+        """prompts for a new name and runs rename api function"""
         new_name, ok = QInputDialog.getText(self, "Rename Song", "Enter new name:")
         if not ok or not new_name.strip():
             return
 
-        error = client_songs.rename_song(song_name, new_name)  # run request and get any errors
+        error = songs.rename_song(song_name, new_name)  # run request and get any errors
         if error:
             QMessageBox.warning(self, "Rename failed", error)
         else:
             self._handle_see_storage()
 
     def _handle_extract(self, song_name: str):
-        error = client_songs.extract_song(song_name)  # run request and get any errors
+        """runs extract api function and notifies the user of the result"""
+        error = songs.extract_song(song_name)  # run request and get any errors
 
         if error:
             QMessageBox.warning(self, "Extract failed", error)
@@ -187,6 +194,7 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, "Extracted", "Song saved to Downloads folder.")
 
     def _handle_delete(self, song_name: str):
+        """shows confirmation dialog and runs delete api function if confirmed"""
         # confirmation box
         confirm = QMessageBox(self)
         confirm.setWindowTitle("Delete Song")
@@ -196,7 +204,7 @@ class MainWindow(QMainWindow):
         confirm.setDefaultButton(QMessageBox.StandardButton.Cancel)
 
         if confirm.exec() == QMessageBox.StandardButton.Yes:
-            error = client_songs.delete_song(song_name)  # run request and get any errors
+            error = songs.delete_song(song_name)  # run request and get any errors
             if error:
                 QMessageBox.warning(self, "Delete failed", error)
             else:
@@ -204,11 +212,12 @@ class MainWindow(QMainWindow):
 
     def _handle_compose(self, key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
                         verse_bars: int, chorus_bars: int, has_drums: bool, complexity: str):
+        """runs compose api function, starts playback and switches to playback state"""
         self.compose_window.compose_btn.setEnabled(False)
 
         try:
-            song_data = client_songs.compose(key, scale, tempo, chords_instrument, melody_instrument,
-                                             verse_bars, chorus_bars, has_drums, complexity)
+            song_data = songs.compose(key, scale, tempo, chords_instrument, melody_instrument,
+                                      verse_bars, chorus_bars, has_drums, complexity)
 
             if isinstance(song_data, str):
                 self._on_compose_error(song_data)
@@ -231,18 +240,20 @@ class MainWindow(QMainWindow):
             self.compose_window.compose_btn.setEnabled(True)
 
     def _on_compose_error(self, error):
+        """shows compose error and resets compose window to form state"""
         QMessageBox.critical(self, "Compose failed", error)
         self.compose_window.reset()
         self.compose_window.compose_btn.setEnabled(True)
 
     def _on_song_finished(self):
-        """return to the starting state after a song has ended"""
+        """called when song ends naturally, resets playback ui and re-enables sidebar"""
         self.compose_window.playback.pause_btn.setText("Play")
         self.storage_window.playback.pause_btn.setText("Play")
         self.storage_window.show_list()
         self.sidebar.setEnabled(True)
 
     def _handle_pause(self):
+        """toggles pause/resume, or restarts song if it has finished"""
         if not self._player.is_playing:
             # determine which window is active
             if self.inner_stack.currentIndex() == 0:  # compose
@@ -257,12 +268,14 @@ class MainWindow(QMainWindow):
             self.storage_window.playback.pause_btn.setText(mode)
 
     def _handle_loop(self):
+        """toggles loop on/off and updates button text on both windows"""
         mode = self._player.toggle_loop()
         self.compose_window.playback.loop_btn.setText(f"Loop: {mode}")
         self.storage_window.playback.loop_btn.setText(f"Loop: {mode}")
 
     def _handle_save_song(self, song_uuid: str, song_name: str):
-        error = client_songs.save_song(song_uuid, song_name)
+        """runs save api function and resets compose window on success"""
+        error = songs.save_song(song_uuid, song_name)
         if error:
             QMessageBox.warning(self, "Save failed", error)
         else:
@@ -271,7 +284,8 @@ class MainWindow(QMainWindow):
             self._player.stop()
 
     def _handle_discard_song(self, song_uuid: str):
-        error = client_songs.discard_song(song_uuid)
+        """runs discard api function and resets compose window on success"""
+        error = songs.discard_song(song_uuid)
         if error:
             QMessageBox.warning(self, "Discard failed", error)
         else:
@@ -280,6 +294,7 @@ class MainWindow(QMainWindow):
             self._player.stop()
 
     def _handle_logout(self):
+        """reset the whole app and logout"""
         # kill any song currently playing
         self._player.stop()
 
@@ -287,7 +302,7 @@ class MainWindow(QMainWindow):
         self._username = None
         self._access_token = None
         self._refresh_token = None
-        client_utils.set_tokens(None, None)
+        utils.set_tokens(None, None)
 
         # reset windows
         self.sidebar.setEnabled(True)

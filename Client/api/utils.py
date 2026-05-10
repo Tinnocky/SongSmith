@@ -6,18 +6,19 @@ import httpx
 import pretty_midi as pm
 from httpx import Response
 
-from Client.audio import MidiPlayer
+from Client.audio_engine.audio import MidiPlayer
 
 BASE_URL = "http://127.0.0.1:8000"
 SF2_FILENAME = "GeneralUser_GS_v1.471.sf2"
 SF2_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), SF2_FILENAME)
 client = httpx.Client(base_url=BASE_URL)
 
-access_token: str | None = None  # global tokens
-refresh_token: str | None = None  # global tokens
+access_token: str | None = None  # global token instance
+refresh_token: str | None = None  # global token instance
 
 
 def set_tokens(new_access_token: str | None, new_refresh_token: str | None) -> None:
+    """set a new value to the global tokens (or None to wipe any value)"""
     global access_token, refresh_token
     access_token = new_access_token
     refresh_token = new_refresh_token
@@ -29,7 +30,7 @@ def get_auth_header(token: str) -> dict:
 
 
 def run_request(method, url, **kwargs) -> Response:
-    """this is a helper, send the provided http request to the server and handle the access/refresh tokens,
+    """helper function. send the provided http request to the server and handle the access/refresh tokens,
     instead of doing it for every single request. kwargs includes the json with the information needed for the
     specific request."""
     global access_token
@@ -67,6 +68,7 @@ def refresh_access_token() -> bool:
 
 
 def start_playing(player: MidiPlayer, midi_bytes: bytes):
+    """load the midi bytes into the provided player and start playing"""
     midi_object = pm.PrettyMIDI(io.BytesIO(midi_bytes))
     player.load(midi_object)
     player.play()

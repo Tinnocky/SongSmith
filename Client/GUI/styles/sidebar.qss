@@ -1,10 +1,10 @@
-/* ── sidebar container ── */
+/* sidebar container */
 Sidebar {
     background-color: #16161f;
     border-right: 2px solid #414868;
 }
 
-/* ── nav buttons ── */
+/* nav buttons */
 Sidebar QPushButton {
     background-color: transparent;
     border: 1px solid #414868;
@@ -27,7 +27,7 @@ Sidebar QPushButton:pressed {
     color: #c0caf5;
 }
 
-/* ── active state ── */
+/* active state */
 Sidebar QPushButton[active=true] {
     background-color: #1e2a4a;
     border: 2px solid #7aa2f7;
@@ -41,7 +41,7 @@ Sidebar QPushButton[active=true]:hover {
     color: #89b4fa;
 }
 
-/* ── logout ── */
+/* logout */
 Sidebar QPushButton#logout_btn {
     color: #f7768e;
     border-color: #f7768e;
@@ -53,7 +53,7 @@ Sidebar QPushButton#logout_btn:hover {
     border-color: #f7768e;
 }
 
-/* ── username label ── */
+/* username label */
 Sidebar QLabel#username_label {
     color: #c0caf5;
     font-size: 16px;

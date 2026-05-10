@@ -9,11 +9,11 @@ from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 
-from Server.CompositionEngine.composer import Generator
-from Server.CompositionEngine.midi import MidiEngine
-from Server.CompositionEngine.theory import Ruleset
-from Server.DB.database import engine
-from Server.DB.managers import SongManager, UserManager
+from Server.composition_engine.composer import Generator
+from Server.composition_engine.midi import MidiEngine
+from Server.composition_engine.theory import Ruleset
+from Server.database.database import engine
+from Server.database.managers import SongManager, UserManager
 
 # auth related
 load_dotenv()
@@ -156,9 +156,11 @@ async def validate_strong_password(password: str) -> list[str] | None:
 # dict[user_id, dict[song_uuid, song_data]]
 song_cache: dict[str, dict[str, dict]] = {}
 
+
 def get_song_cache() -> dict[str, dict[str, dict]]:
     """FastAPI dependency. returns the song cache"""
     return song_cache
+
 
 def get_midi(rq) -> tuple[bytes, float]:
     """create a new song and return the midi file in bytes, and it's length in seconds, using the request."""
@@ -166,7 +168,6 @@ def get_midi(rq) -> tuple[bytes, float]:
     ruleset = Ruleset(rq.key, rq.scale, rq.tempo, rq.chords_instrument, rq.melody_instrument, rq.verse_bars,
                       rq.chorus_bars, rq.has_drums, rq.complexity)
     song = Generator(ruleset).generate_song()
-
 
     # turn song to midi and then to bytes
     midi_object = MidiEngine(song)

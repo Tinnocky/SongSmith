@@ -2,7 +2,7 @@ import bcrypt
 from sqlalchemy import Column, String, Integer, Float, LargeBinary, ForeignKey, Engine, UniqueConstraint
 from sqlalchemy.orm import Session
 
-from Server.DB.database import Base
+from Server.database.database import Base
 
 
 class SongTable(Base):
@@ -78,6 +78,7 @@ class SongManager:
             return None
 
     def list_songs(self, owner_id: int) -> list[dict]:
+        """returns a list of all songs belonging to the user as dictionaries with song metadata"""
         with Session(self._engine) as session:
             song_list = session.query(SongTable).filter(
                 SongTable.owner_id == owner_id

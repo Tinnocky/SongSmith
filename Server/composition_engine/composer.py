@@ -2,9 +2,9 @@ import math
 import random
 from collections import Counter
 
-from Server.CompositionEngine.models import Note, Chord, Drums, Song
-from Server.CompositionEngine.theory import Ruleset
-from Server.utils.composition_utils import BASE_NOTE_VELOCITY_WEIGHTS, DRUM_MAIN_PATTERNS, \
+from Server.composition_engine.models import Note, Chord, Drums, Song
+from Server.composition_engine.theory import Ruleset
+from Server.composition_engine.utils import BASE_NOTE_VELOCITY_WEIGHTS, DRUM_MAIN_PATTERNS, \
     BASE_NOTE_BEATS_WEIGHTS, NOTE_BEATS, VELOCITY_BEAT_SHIFTS, VELOCITY_DEGREE_SHIFTS, get_beat_position, \
     CHORD_PATTERN_MULTIPLIERS, BASE_CHORD_PATTERN_WEIGHTS, BEATS_PER_BAR, SONG_PARTS
 
@@ -310,8 +310,3 @@ class Generator:
             bridge_pattern = "SPARSE"
 
         return main_pattern, bridge_pattern
-
-
-# test
-if __name__ == "__main__":
-    pass

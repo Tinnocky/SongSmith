@@ -1,4 +1,4 @@
-/* ── labels ── */
+/* labels */
 ProfileWindow QLabel {
     color: #565f89;
     font-size: 14px;
@@ -33,7 +33,7 @@ ProfileWindow QLabel#danger_description {
     font-size: 15px;
 }
 
-/* ── shared button sizing ── */
+/* shared button sizing */
 ProfileWindow QPushButton#change_password_btn,
 ProfileWindow QPushButton#delete_account_btn {
     border-radius: 8px;
@@ -41,17 +41,17 @@ ProfileWindow QPushButton#delete_account_btn {
     font-size: 15px;
 }
 
-/* ── change password — sizing only, colors from base ── */
+/* change password (sizing only, colors from base) */
 ProfileWindow QPushButton#change_password_btn {
     font-weight: 700;
 }
 
-/* ── delete account — sizing only, colors from base ── */
+/* delete account (sizing only, colors from base) */
 ProfileWindow QPushButton#delete_account_btn {
     font-weight: 600;
 }
 
-/* ── reveal password button ── */
+/* reveal password button */
 ProfileWindow QPushButton#reveal_password_btn {
     background-color: transparent;
     border: 1px solid #414868;
@@ -75,7 +75,7 @@ ProfileWindow QPushButton#reveal_password_btn:checked {
     border-color: #7aa2f7;
 }
 
-/* ── error / success label ── */
+/* error/success label */
 QLabel#error_label[state="error"] {
     color: #f7768e;
 }

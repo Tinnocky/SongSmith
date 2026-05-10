@@ -1,4 +1,3 @@
-/* ── global ── */
 QWidget {
     background-color: #1a1b26;
     color: #c0caf5;
@@ -18,7 +17,7 @@ QScrollArea {
     background: transparent;
 }
 
-/* ── shared input base ── */
+/* shared input base */
 QLineEdit,
 QComboBox,
 QSpinBox {
@@ -46,7 +45,7 @@ QLineEdit:disabled {
     border-color: #24283b;
 }
 
-/* ── combobox ── */
+/* combobox */
 QComboBox {
     min-width: 140px;
 }
@@ -79,7 +78,7 @@ QComboBox QAbstractItemView {
     outline: none;
 }
 
-/* ── spinbox ── */
+/* spinbox */
 QSpinBox::up-button,
 QSpinBox::down-button {
     background-color: #2a2f45;
@@ -104,7 +103,7 @@ QSpinBox::down-arrow {
     border-top: 6px solid #565f89;
 }
 
-/* ── buttons ── */
+/* buttons */
 QPushButton {
     background-color: #24283b;
     color: #c0caf5;
@@ -133,7 +132,7 @@ QPushButton:disabled {
     background-color: #1e2133;
 }
 
-/* ── accent fill button — shared across screens ── */
+/* accent fill button */
 QPushButton#submit_btn,
 QPushButton#compose_btn,
 QPushButton#play_btn,
@@ -167,7 +166,7 @@ QPushButton#play_btn:disabled {
     border: 1px solid #2a2f45;
 }
 
-/* ── danger button — shared across screens ── */
+/* danger button */
 QPushButton#discard_btn,
 QPushButton#delete_btn,
 QPushButton#delete_account_btn {
@@ -184,7 +183,7 @@ QPushButton#delete_account_btn:hover {
     border-color: #f7768e;
 }
 
-/* ── checkbox ── */
+/* checkbox */
 QCheckBox {
     color: #c0caf5;
     spacing: 10px;
@@ -208,7 +207,7 @@ QCheckBox::indicator:hover {
     border-color: #7aa2f7;
 }
 
-/* ── progress bar ── */
+/* progress bar */
 QProgressBar {
     background-color: #24283b;
     border: 1px solid #414868;
@@ -223,7 +222,7 @@ QProgressBar::chunk {
     border-radius: 6px;
 }
 
-/* ── list widget ── */
+/* list widget */
 QListWidget {
     background-color: #24283b;
     border: 1px solid #414868;
@@ -249,7 +248,7 @@ QListWidget::item:selected {
     border-left: 3px solid #7aa2f7;
 }
 
-/* ── scrollbar ── */
+/* scrollbar */
 QScrollBar:vertical {
     background-color: #1a1b26;
     width: 6px;
@@ -271,7 +270,7 @@ QScrollBar::sub-line:vertical {
     height: 0px;
 }
 
-/* ── separators ── */
+/* separators */
 QFrame[frameShape="4"],
 QFrame[frameShape="5"] {
     color: #2a2f45;
@@ -280,7 +279,7 @@ QFrame[frameShape="5"] {
     max-height: 1px;
 }
 
-/* ── message boxes ── */
+/* message boxes */
 QMessageBox {
     background-color: #1a1b26;
     color: #c0caf5;

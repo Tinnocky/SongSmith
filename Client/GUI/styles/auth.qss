@@ -1,18 +1,18 @@
-/* ── form labels ── */
+/* form labels */
 AuthWindow QLabel {
     color: #565f89;
     font-size: 14px;
     font-weight: 500;
 }
 
-/* ── error label ── */
+/* error label */
 AuthWindow QLabel#error_label {
     color: #f7768e;
     font-size: 13px;
     font-weight: 500;
 }
 
-/* ── submit button — sizing only, colors from base ── */
+/* submit button (sizing only, colors from base) */
 AuthWindow QPushButton#submit_btn {
     border-radius: 8px;
     padding: 12px 20px;
@@ -20,7 +20,7 @@ AuthWindow QPushButton#submit_btn {
     min-height: 24px;
 }
 
-/* ── switch mode — link style ── */
+/* switch mode */
 AuthWindow QPushButton#switch_mode_btn {
     background-color: transparent;
     border: none;
@@ -36,7 +36,7 @@ AuthWindow QPushButton#switch_mode_btn:hover {
     border: none;
 }
 
-/* ── reveal password button ── */
+/* reveal password button */
 AuthWindow QPushButton#reveal_password_btn {
     background-color: transparent;
     border: 1px solid #414868;

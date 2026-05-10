@@ -1,6 +1,7 @@
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import *
-from Client.GUI.playback_widget import PlaybackWidget
+
+from Client.gui.playback_widget import PlaybackWidget
 
 
 class StorageWindow(QWidget):
@@ -16,7 +17,7 @@ class StorageWindow(QWidget):
     def __init__(self):
         super().__init__()
 
-        # ── list view ──
+        # list view
         self.refresh_btn = QPushButton("Refresh")
         self.refresh_btn.clicked.connect(lambda: self.try_see_storage.emit())
 
@@ -55,7 +56,7 @@ class StorageWindow(QWidget):
         list_layout.addWidget(self.song_list)
         list_layout.addLayout(buttons_row)
 
-        # ── playback view ──
+        # playback view
         self.playback = PlaybackWidget()
         self.playback.try_pause.connect(self.try_pause)
         self.playback.try_loop.connect(self.try_loop)
@@ -70,33 +71,38 @@ class StorageWindow(QWidget):
         playback_layout.addWidget(self.playback)
         playback_layout.addWidget(self.stop_btn)
 
-        # ── stack ──
+        # stack
         self.stack = QStackedWidget()
-        self.stack.addWidget(list_view)      # index 0
+        self.stack.addWidget(list_view)  # index 0
         self.stack.addWidget(playback_view)  # index 1
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.stack)
 
     def show_playback(self, song_name: str):
+        """switches to playback view and displays the song name"""
         self.playback.now_playing_label.setText(f"Now playing: {song_name}")
         self.stack.setCurrentIndex(1)
 
     def show_list(self):
+        """switches back to the song list view and resets playback button"""
         self.playback.pause_btn.setText("Pause")  # reset button text
         self.stack.setCurrentIndex(0)
 
     def _on_selection_changed(self):
+        """enables or disables action buttons based on whether a song is selected"""
         has_selection = len(self.song_list.selectedItems()) > 0
         self._set_action_buttons_enabled(has_selection)
 
     def _set_action_buttons_enabled(self, enabled: bool):
+        """enables or disables all action buttons (play, rename, extract, delete)"""
         self.play_btn.setEnabled(enabled)
         self.rename_btn.setEnabled(enabled)
         self.extract_btn.setEnabled(enabled)
         self.delete_btn.setEnabled(enabled)
 
     def _selected_song_name(self) -> str | None:
+        """returns the name of the currently selected song, or None if nothing is selected"""
         items = self.song_list.selectedItems()
         if not items:
             return None
@@ -127,7 +133,7 @@ class StorageWindow(QWidget):
 
 
 class SongRow(QWidget):
-    """a song in storage"""
+    """represents one song in storage"""
 
     def __init__(self, song: dict):
         super().__init__()

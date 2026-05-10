@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import *
 
-from Client.GUI.playback_widget import PlaybackWidget
+from Client.gui.playback_widget import PlaybackWidget
 
 
 class ComposeWindow(QWidget):
@@ -131,6 +131,7 @@ class ComposeWindow(QWidget):
         self.try_loop.emit()
 
     def _handle_save(self):
+        """get name of song from popup dialog and emit save signal"""
         name, ok = QInputDialog.getText(self, "Save Song", "Enter song name:")
         if ok and name.strip():
             self.try_save.emit(self.song_uuid, name.strip())

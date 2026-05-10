@@ -1,4 +1,4 @@
-/* ── shared action button base ── */
+/* shared action button base */
 StorageWindow QPushButton#rename_btn,
 StorageWindow QPushButton#extract_btn {
     background-color: transparent;
@@ -9,19 +9,19 @@ StorageWindow QPushButton#extract_btn {
     font-weight: 500;
 }
 
-/* ── rename — purple on hover ── */
+/* rename */
 StorageWindow QPushButton#rename_btn:hover {
     border-color: #bb9af7;
     color: #bb9af7;
 }
 
-/* ── extract — amber on hover ── */
+/* extract */
 StorageWindow QPushButton#extract_btn:hover {
     border-color: #e0af68;
     color: #e0af68;
 }
 
-/* ── refresh ── */
+/* refresh */
 StorageWindow QPushButton#refresh_btn {
     background-color: transparent;
     border: 1px solid #414868;
@@ -37,21 +37,21 @@ StorageWindow QPushButton#refresh_btn:hover {
     color: #7aa2f7;
 }
 
-/* ── play — sizing only, colors from base ── */
+/* play (sizing only, colors from base) */
 StorageWindow QPushButton#play_btn {
     border-radius: 8px;
     padding: 9px 20px;
     font-size: 14px;
 }
 
-/* ── delete — sizing only, colors from base ── */
+/* delete (sizing only, colors from base) */
 StorageWindow QPushButton#delete_btn {
     border-radius: 8px;
     padding: 9px 20px;
     font-weight: 600;
 }
 
-/* ── song row labels ── */
+/* song row labels */
 QLabel#song_name_label {
     font-size: 16px;
     font-weight: 600;
