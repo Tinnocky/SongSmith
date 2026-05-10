@@ -5,7 +5,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from sqlalchemy.exc import IntegrityError
 
-from Server.routers.utils import get_midi, get_user_data, get_song_manager, get_song_cache
+from server.routers.utils import get_midi, get_user_data, get_song_manager, get_song_cache
 
 router = APIRouter(prefix="/songs")
 

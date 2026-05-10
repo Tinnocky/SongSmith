@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import *
 
-from Client.gui.playback_widget import PlaybackWidget
+from client.gui.playback_widget import PlaybackWidget
 
 
 class ComposeWindow(QWidget):
@@ -108,7 +108,7 @@ class ComposeWindow(QWidget):
         main_layout.addWidget(self.playback_widget)
 
     def _handle_compose(self):
-        """placeholder — will trigger compose request and show progress bar"""
+        """collects form values and emits try_compose signal to MainWindow"""
         key = self.key_input.currentText().upper()
         scale = self.scale_input.currentText().upper()
         tempo = self.tempo_input.value()

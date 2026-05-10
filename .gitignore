@@ -10,7 +10,7 @@ Client/GUI/testing.py
 .env
 
 # Database
-Server/DB/database.db
+server/DB/database.db
 
 # Large binary files
 Client/GeneralUser_GS_v1.471.sf2

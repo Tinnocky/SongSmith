@@ -2,8 +2,8 @@ from functools import cached_property
 
 import pretty_midi as pm
 
-from Server.composition_engine.models import Chord, Song
-from Server.composition_engine.utils import INSTRUMENTS_MIDI_CHANNELS, OCTAVES, CHORD_OCTAVES, MIDI_DRUM_PITCHES, \
+from server.composition_engine.models import Chord, Song
+from server.composition_engine.utils import INSTRUMENTS_MIDI_CHANNELS, OCTAVES, CHORD_OCTAVES, MIDI_DRUM_PITCHES, \
     DRUM_VELOCITIES, SONG_PARTS, BEATS_PER_BAR, DRUM_TO_PATTERN_MAP, ARPEGGIO_OCTAVES
 
 

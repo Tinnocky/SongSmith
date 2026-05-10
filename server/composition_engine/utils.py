@@ -85,11 +85,6 @@ SCALES = {
 NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]  # 12 notes in an octave
 
 
-def note_to_pitch(note_name: str) -> int:
-    """Convert note name to pitch number (0-11)."""
-    return NOTES.index(note_name)
-
-
 def get_beat_position(beats: float) -> int:
     """returns the position of the beat (1-4) inside the bar."""
     return (int(beats % 4)) + 1  # +1 because we return it as 1-indexed

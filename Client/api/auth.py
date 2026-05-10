@@ -1,6 +1,6 @@
 from http import HTTPStatus as Status
 
-from Client.api.utils import run_request
+from client.api.utils import run_request
 
 
 def register(username: str, password: str) -> dict[str, str] | str:
@@ -60,5 +60,6 @@ def change_password(old_password: str, new_password: str) -> str | None:
 
 
 def delete_account() -> bool:
+    """runs the delete account request and returns true if successful"""
     response = run_request("DELETE", "/auth/user")
     return response.status_code == Status.NO_CONTENT

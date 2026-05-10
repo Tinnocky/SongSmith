@@ -3,14 +3,14 @@ from pathlib import Path
 from PySide6.QtCore import QSize, Signal
 from PySide6.QtWidgets import *
 
-from Client.api import auth, songs, utils
-from Client.api.utils import SF2_PATH, start_playing
-from Client.audio_engine.audio import MidiPlayer
-from Client.gui.auth_gui import AuthWindow
-from Client.gui.compose_gui import ComposeWindow
-from Client.gui.profile_gui import ProfileWindow
-from Client.gui.sidebar_gui import Sidebar
-from Client.gui.storage_gui import StorageWindow, SongRow
+from client.api import auth, songs, utils
+from client.api.utils import SF2_PATH, start_playing
+from client.audio_engine.audio import MidiPlayer
+from client.gui.auth_gui import AuthWindow
+from client.gui.compose_gui import ComposeWindow
+from client.gui.profile_gui import ProfileWindow
+from client.gui.sidebar_gui import Sidebar
+from client.gui.storage_gui import StorageWindow, SongRow
 
 
 class MainWindow(QMainWindow):

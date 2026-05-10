@@ -9,7 +9,7 @@ def main():
 
     # start server in background
     server = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "Server.main:app"],
+        [sys.executable, "-m", "uvicorn", "server.main:app"],
         cwd=Path(__file__).parent
     )
 

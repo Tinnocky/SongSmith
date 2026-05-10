@@ -1,16 +1,17 @@
 import io
-import os
 from http import HTTPStatus as Status
+from pathlib import Path
 
 import httpx
 import pretty_midi as pm
 from httpx import Response
 
-from Client.audio_engine.audio import MidiPlayer
+from client.audio_engine.audio import MidiPlayer
 
 BASE_URL = "http://127.0.0.1:8000"
 SF2_FILENAME = "GeneralUser_GS_v1.471.sf2"
-SF2_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), SF2_FILENAME)
+SF2_PATH = str(Path(__file__).parent.parent / SF2_FILENAME)  # .parent.parent is Client/
+
 client = httpx.Client(base_url=BASE_URL)
 
 access_token: str | None = None  # global token instance

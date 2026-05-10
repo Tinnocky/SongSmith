@@ -2,7 +2,7 @@ import bcrypt
 from sqlalchemy import Column, String, Integer, Float, LargeBinary, ForeignKey, Engine, UniqueConstraint
 from sqlalchemy.orm import Session
 
-from Server.database.database import Base
+from server.database.database import Base
 
 
 class SongTable(Base):
@@ -116,7 +116,7 @@ class UserTable(Base):
 
 
 class UserManager:
-    def __init__(self, db_engine):
+    def __init__(self, db_engine: Engine):
         self._engine = db_engine
 
     @staticmethod

@@ -1,7 +1,7 @@
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import *
 
-from Client.gui.playback_widget import PlaybackWidget
+from client.gui.playback_widget import PlaybackWidget
 
 
 class StorageWindow(QWidget):

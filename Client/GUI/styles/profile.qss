@@ -12,10 +12,6 @@ ProfileWindow QLabel#username_label {
     letter-spacing: -1px;
 }
 
-ProfileWindow QLabel#songs_saved_label {
-    font-size: 15px;
-}
-
 ProfileWindow QLabel#section_title {
     color: #7aa2f7;
     font-size: 18px;

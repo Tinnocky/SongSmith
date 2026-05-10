@@ -2,7 +2,7 @@ from http import HTTPStatus as Status
 from pathlib import Path
 from urllib.parse import quote
 
-from Client.api.utils import run_request
+from client.api.utils import run_request
 
 
 def compose(key: str, scale: str, tempo: int, chords_instrument: str, melody_instrument: str,
@@ -59,7 +59,7 @@ def discard_song(song_uuid: str) -> str | None:
 
 
 def see_storage() -> list[dict] | None:
-    """run the save song request. return the fetched song_list even if its empty, or return None or failure."""
+    """run the see_storage request. return the fetched song_list even if its empty, or return None or failure."""
     response = run_request("GET", "/songs/storage")
 
     if response.status_code != Status.OK:
@@ -106,7 +106,6 @@ def extract_song(song_name: str) -> str | None:
         downloads = Path.home() / "Downloads"
         file_path = downloads / f"{song_name}.mid"
         file_path.write_bytes(response.content)
-        print(f"Song saved to {file_path}")  # test
         return None
 
     # didn't go through

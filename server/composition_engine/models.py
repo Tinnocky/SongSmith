@@ -1,6 +1,6 @@
 from functools import cached_property
 
-from Server.composition_engine.utils import DRUM_MAIN_PATTERNS, DRUM_BRIDGE_PATTERNS, SONG_PARTS, BEATS_PER_BAR, \
+from server.composition_engine.utils import DRUM_MAIN_PATTERNS, DRUM_BRIDGE_PATTERNS, SONG_PARTS, BEATS_PER_BAR, \
     NOTES, NOTE_BEATS, NOTE_VELOCITIES, PATTERNS
 
 
@@ -44,6 +44,7 @@ class Note:
             raise ValueError
 
         self._name = name
+        self._pitch = NOTES.index(name)  # update pitch too
 
     @property
     def pitch(self) -> int:

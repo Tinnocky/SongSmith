@@ -9,11 +9,11 @@ from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 
-from Server.composition_engine.composer import Generator
-from Server.composition_engine.midi import MidiEngine
-from Server.composition_engine.theory import Ruleset
-from Server.database.database import engine
-from Server.database.managers import SongManager, UserManager
+from server.composition_engine.composer import Generator
+from server.composition_engine.midi import MidiEngine
+from server.composition_engine.theory import Ruleset
+from server.database.database import engine
+from server.database.managers import SongManager, UserManager
 
 # auth related
 load_dotenv()
@@ -67,8 +67,7 @@ def get_user_data(token: str = Depends(oauth2_scheme)) -> dict:
 
 
 def get_refresh_token_data(token: str = Depends(oauth2_scheme)) -> dict:
-    """FastAPI dependency. validates session, decodes JWT, returns the user's id and username
-    unlike the get_user_data function, this is used to validate refresh tokens only. a shame I had to create this"""
+    """FastAPI dependency. validates session, decodes JWT refresh token, returns the user's id and username"""
     # decode jwt to get username
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -118,7 +117,7 @@ async def check_hibp(password: str) -> int:
     except httpx.HTTPError:  # catch the raised error
         return 0  # probably better not to block registration if the api is down as it is not in my control
 
-    # the api gave us a big list with hashes with the same   prefix.
+    # the api gave us a big list with hashes with the same prefix.
     # now we will look for the same suffix = our password
     for line in hash_list.text.splitlines():
         hash_str, breaches_amount = line.split(":")

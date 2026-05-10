@@ -1,6 +1,7 @@
 import threading
 import time
 
+import fluidsynth
 import pretty_midi as pm
 
 DSOUND = "dsound"
@@ -8,8 +9,6 @@ DSOUND = "dsound"
 
 class MidiPlayer:
     def __init__(self, soundfont_path: str, on_finished=None):
-        import fluidsynth
-
         # initialize synthesizer
         self.synth = fluidsynth.Synth()
         self.synth.start(driver=DSOUND)  # windows only
@@ -137,6 +136,7 @@ class MidiPlayer:
         self.synth.system_reset()
 
     def toggle_loop(self) -> str:
+        """toggles loop on/off and returns the new state as a string"""
         self.is_looped = not self.is_looped
         return "ON" if self.is_looped else "OFF"
 

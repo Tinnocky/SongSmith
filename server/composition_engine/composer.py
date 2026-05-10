@@ -2,9 +2,9 @@ import math
 import random
 from collections import Counter
 
-from Server.composition_engine.models import Note, Chord, Drums, Song
-from Server.composition_engine.theory import Ruleset
-from Server.composition_engine.utils import BASE_NOTE_VELOCITY_WEIGHTS, DRUM_MAIN_PATTERNS, \
+from server.composition_engine.models import Note, Chord, Drums, Song
+from server.composition_engine.theory import Ruleset
+from server.composition_engine.utils import BASE_NOTE_VELOCITY_WEIGHTS, DRUM_MAIN_PATTERNS, \
     BASE_NOTE_BEATS_WEIGHTS, NOTE_BEATS, VELOCITY_BEAT_SHIFTS, VELOCITY_DEGREE_SHIFTS, get_beat_position, \
     CHORD_PATTERN_MULTIPLIERS, BASE_CHORD_PATTERN_WEIGHTS, BEATS_PER_BAR, SONG_PARTS
 
@@ -63,7 +63,7 @@ class Generator:
 
         # change the last note of the whole song to be the root note
         if part_name == "ENDING":
-            melody[-1].note_name = self._ruleset.legal_notes[0]  # root note
+            melody[-1].name = self._ruleset.legal_notes[0]  # root note
             melody[-1].degree = 1  # set it to the first degree
 
         return chords, melody
@@ -191,12 +191,6 @@ class Generator:
                 weights[degree] *= 1.5
             else:
                 weights[degree] *= 0.5
-
-        # boost notes 1 or 2 steps close to the last note
-        last_degree = previous_melody[-1].degree if previous_melody else None
-        if last_degree:
-            for degree in weights:
-                weights[degree] *= 1.6
 
         # anti repetition
         if previous_melody:

@@ -5,12 +5,6 @@ ComposeWindow QLabel {
     font-weight: 500;
 }
 
-ComposeWindow QLabel#now_playing_label {
-    color: #9ece6a;
-    font-weight: 700;
-    font-size: 16px;
-}
-
 /* compose button (sizing only, colors from base) */
 ComposeWindow QPushButton#compose_btn {
     border-radius: 8px;

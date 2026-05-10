@@ -3,6 +3,8 @@ from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLa
 
 
 class PlaybackWidget(QWidget):
+    """shared playback controls widget used by both ComposeWindow and StorageWindow"""
+
     try_pause = Signal()
     try_loop = Signal()
 

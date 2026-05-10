@@ -1,6 +1,6 @@
 from functools import cached_property
 
-from Server.composition_engine.utils import SCALES, SCALE_NAMES, NOTES, VERSE_CHORUS_BARS, INSTRUMENTS, \
+from server.composition_engine.utils import SCALES, SCALE_NAMES, NOTES, VERSE_CHORUS_BARS, INSTRUMENTS, \
     COMPLEXITIES, BEATS_PER_BAR
 
 
