@@ -4,8 +4,7 @@ from PySide6.QtCore import QSize, Signal
 from PySide6.QtWidgets import *
 
 from client.api import auth, songs, utils
-from client.api.utils import SF2_PATH, start_playing
-from client.audio_engine.audio import MidiPlayer
+from client.audio_engine.audio import MidiPlayer, SF2_PATH
 from client.gui.auth_gui import AuthWindow
 from client.gui.compose_gui import ComposeWindow
 from client.gui.profile_gui import ProfileWindow
@@ -162,7 +161,7 @@ class MainWindow(QMainWindow):
         if isinstance(result, str):
             QMessageBox.warning(self, "Playback failed", result)
             return
-        start_playing(self._player, result)
+        self._player.start_playing( result)
         self.storage_window.show_playback(song_name)
         self.sidebar.setEnabled(False)
 
@@ -231,7 +230,7 @@ class MainWindow(QMainWindow):
             self.compose_window.show_playback()
             self.sidebar.setEnabled(False)
 
-            start_playing(self._player, midi_bytes)
+            self._player.start_playing(midi_bytes)
 
         except Exception as e:
             self._on_compose_error(str(e))
@@ -257,7 +256,7 @@ class MainWindow(QMainWindow):
         if not self._player.is_playing:
             # determine which window is active
             if self.inner_stack.currentIndex() == 0:  # compose
-                start_playing(self._player, self.compose_window.midi_bytes)
+                self._player.start_playing(self.compose_window.midi_bytes)
                 self.compose_window.playback.pause_btn.setText("Pause")
             else:  # storage — song finished, just reset
                 self.storage_window.show_list()

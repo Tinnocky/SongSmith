@@ -1,10 +1,14 @@
+import io
 import threading
 import time
+from pathlib import Path
 
 import fluidsynth
 import pretty_midi as pm
 
 DSOUND = "dsound"
+SF2_FILENAME = "GeneralUser_GS_v1.471.sf2"
+SF2_PATH = str(Path(__file__).parent.parent / SF2_FILENAME)  # .parent.parent is Client/
 
 
 class MidiPlayer:
@@ -20,7 +24,7 @@ class MidiPlayer:
         self._duration: float = 0.0
         self._current_second: float = 0.0
         self._is_playing: bool = False
-        self.is_looped: bool = False
+        self._is_looped: bool = False
 
         # callback called when song finishes naturally
         self.on_finished = on_finished
@@ -39,7 +43,7 @@ class MidiPlayer:
         self.synth.delete()
 
     @property
-    def position(self) -> float:
+    def current_second(self) -> float:
         with self._lock:
             return self._current_second
 
@@ -51,9 +55,11 @@ class MidiPlayer:
     def is_playing(self) -> bool:
         return self._is_playing
 
-    @property
-    def is_paused(self) -> bool:
-        return self._pause_event.is_set()
+    def start_playing(self, midi_bytes: bytes):
+        """load the midi bytes into the provided player and start playing"""
+        midi_object = pm.PrettyMIDI(io.BytesIO(midi_bytes))
+        self.load(midi_object)
+        self.play()
 
     def load(self, midi: pm.PrettyMIDI):
         """load the notes list and store instruments for setup later"""
@@ -137,8 +143,8 @@ class MidiPlayer:
 
     def toggle_loop(self) -> str:
         """toggles loop on/off and returns the new state as a string"""
-        self.is_looped = not self.is_looped
-        return "ON" if self.is_looped else "OFF"
+        self._is_looped = not self._is_looped
+        return "ON" if self._is_looped else "OFF"
 
     def _start_thread(self):
         """start the playback thread from current position"""
@@ -221,7 +227,7 @@ class MidiPlayer:
             # song finished
             self.synth.system_reset()
 
-            if self.is_looped:
+            if self._is_looped:
                 # reset and play again from start
                 with self._lock:
                     self._current_second = 0.0

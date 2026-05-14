@@ -1,16 +1,10 @@
-import io
 from http import HTTPStatus as Status
-from pathlib import Path
 
 import httpx
-import pretty_midi as pm
 from httpx import Response
 
-from client.audio_engine.audio import MidiPlayer
-
 BASE_URL = "http://127.0.0.1:8000"
-SF2_FILENAME = "GeneralUser_GS_v1.471.sf2"
-SF2_PATH = str(Path(__file__).parent.parent / SF2_FILENAME)  # .parent.parent is Client/
+
 
 client = httpx.Client(base_url=BASE_URL)
 
@@ -66,10 +60,3 @@ def refresh_access_token() -> bool:
         return True
 
     return False
-
-
-def start_playing(player: MidiPlayer, midi_bytes: bytes):
-    """load the midi bytes into the provided player and start playing"""
-    midi_object = pm.PrettyMIDI(io.BytesIO(midi_bytes))
-    player.load(midi_object)
-    player.play()

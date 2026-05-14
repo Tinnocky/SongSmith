@@ -135,4 +135,4 @@ def rename_song(request: RenameSongRequest, user_data: dict = Depends(get_user_d
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=f"You already have a song with that name.")
 
-    # result must be True so that's it
+    # result must be true so that's it
